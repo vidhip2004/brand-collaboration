@@ -14,12 +14,35 @@ const COUNTRY_CURRENCY_MAP = {
     locale: "en-US",
     name: "US Dollar",
   },
-
+  US: {
+    code: "USD",
+    symbol: "$",
+    locale: "en-US",
+    name: "US Dollar",
+  },
   "United States": {
     code: "USD",
     symbol: "$",
     locale: "en-US",
     name: "US Dollar",
+  },
+  "United States of America": {
+    code: "USD",
+    symbol: "$",
+    locale: "en-US",
+    name: "US Dollar",
+  },
+  America: {
+    code: "USD",
+    symbol: "$",
+    locale: "en-US",
+    name: "US Dollar",
+  },
+  IN: {
+    code: "INR",
+    symbol: "₹",
+    locale: "en-IN",
+    name: "Indian Rupee",
   },
 
   UK: {

@@ -18,6 +18,7 @@ import {
 } from "lucide-react";
 
 import authService from "../../services/authService";
+import { getCurrencyFromCountry } from "../../services/currency";
 
 const CreateCampaign = () => {
   const navigate = useNavigate();
@@ -37,8 +38,12 @@ const CreateCampaign = () => {
     creatorsNeeded: "1",
     deliverables: "",
     requirements: "",
-    location: "India",
+    location: user?.country || user?.location || "USA",
   });
+
+  // Dynamically derive currency from user's country or chosen location
+  const activeCountry = formData.location || user?.country || user?.location || "USA";
+  const brandCurrency = getCurrencyFromCountry(activeCountry);
 
   const [error, setError] = useState("");
   const [success, setSuccess] = useState("");
@@ -179,6 +184,7 @@ const CreateCampaign = () => {
       brandId: user.id,
       brandName: user.companyName || user.name,
       budget: Number(formData.budget),
+      currency: brandCurrency.code,
       creatorsNeeded: Number(formData.creatorsNeeded),
     };
 
@@ -211,7 +217,7 @@ const CreateCampaign = () => {
         creatorsNeeded: "1",
         deliverables: "",
         requirements: "",
-        location: "India",
+        location: user?.country || user?.location || "USA",
       });
     }
   } catch (error) {
@@ -502,12 +508,12 @@ const CreateCampaign = () => {
               {/* Budget */}
               <div>
                 <label className="block text-sm text-gray-300 mb-2">
-                  Total Budget (₹) *
+                  Total Budget ({brandCurrency.symbol}) *
                 </label>
 
                 <div className="relative">
-                  <span className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400">
-                    ₹
+                  <span className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400 font-semibold">
+                    {brandCurrency.symbol}
                   </span>
 
                   <input
@@ -515,7 +521,7 @@ const CreateCampaign = () => {
                     name="budget"
                     value={formData.budget}
                     onChange={handleChange}
-                    placeholder="50000"
+                    placeholder="5000"
                     min="1"
                     className="w-full bg-[#111827] border border-white/10 rounded-xl px-10 py-3 text-white outline-none focus:border-violet-500"
                   />
@@ -633,7 +639,7 @@ const CreateCampaign = () => {
                 name="location"
                 value={formData.location}
                 onChange={handleChange}
-                placeholder="Example: India"
+                placeholder={`Example: ${user?.country || "USA"}`}
                 className="w-full bg-[#111827] border border-white/10 rounded-xl px-4 py-3 text-white outline-none focus:border-violet-500"
               />
             </div>
