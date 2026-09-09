@@ -290,6 +290,30 @@ const CreatorDetails = () => {
                 </div>
               )}
 
+              {/* Social Statistics */}
+              <div className="pt-4 border-t border-gray-800">
+                <p className="text-sm text-purple-400 font-semibold mb-3">
+                  Social Statistics
+                </p>
+
+                <div className="grid grid-cols-3 gap-3">
+                  <div className="bg-gray-900/60 p-3 rounded-xl border border-gray-800 text-center">
+                    <p className="text-xs text-gray-400">Followers</p>
+                    <p className="text-base font-bold text-white mt-1">{creator.followers || "N/A"}</p>
+                  </div>
+
+                  <div className="bg-gray-900/60 p-3 rounded-xl border border-gray-800 text-center">
+                    <p className="text-xs text-gray-400">Engagement</p>
+                    <p className="text-base font-bold text-white mt-1">{creator.engagementRate || "N/A"}</p>
+                  </div>
+
+                  <div className="bg-gray-900/60 p-3 rounded-xl border border-gray-800 text-center">
+                    <p className="text-xs text-gray-400">Avg Reach</p>
+                    <p className="text-base font-bold text-white mt-1">{creator.averageReach || "N/A"}</p>
+                  </div>
+                </div>
+              </div>
+
             </div>
           </div>
 

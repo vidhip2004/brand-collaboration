@@ -19,10 +19,12 @@ import {
   CheckCircle,
   ArrowUpRight,
   ChevronRight,
+  Sparkles,
 } from "lucide-react";
 
 import axios from "axios";
 import authService from "../../services/authService";
+import { calculateProfileCompletion } from "./CreatorProfile";
 import {
   getCurrencyFromCountry,
   formatCurrency,
@@ -890,10 +892,10 @@ const CreatorDashboard = () => {
               <button
                 onClick={() =>
                   navigate(
-                    "/creator/profile"
+                    "/creator/creatorProfile"
                   )
                 }
-                className="flex items-center justify-center gap-2 px-5 py-3 rounded-xl border border-white/10 hover:bg-white/5 transition"
+                className="flex items-center justify-center gap-2 px-5 py-3 rounded-xl border border-white/10 hover:bg-white/5 transition font-semibold"
               >
                 <User size={17} />
                 View Profile
@@ -902,6 +904,50 @@ const CreatorDashboard = () => {
             </div>
 
           </section>
+
+          {/* =====================================
+              PROFILE COMPLETION SCORE
+          ====================================== */}
+
+          {(() => {
+            const completionScore = calculateProfileCompletion(user);
+            return (
+              <section className="mt-6 rounded-2xl border border-violet-500/20 bg-gradient-to-r from-violet-950/40 via-[#0d1424] to-cyan-950/30 p-6 shadow-xl">
+                <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-5">
+                  <div className="flex-1">
+                    <div className="flex items-center justify-between mb-2">
+                      <h3 className="font-bold text-lg flex items-center gap-2">
+                        <Sparkles size={18} className="text-violet-400" />
+                        Profile Completion Score
+                      </h3>
+                      <span className="text-xl font-extrabold text-transparent bg-clip-text bg-gradient-to-r from-violet-400 to-cyan-400">
+                        {completionScore}%
+                      </span>
+                    </div>
+                    <p className="text-sm text-gray-400 mb-3">
+                      {completionScore === 100
+                        ? "🎉 Your profile is 100% complete! Brands can easily discover your statistics."
+                        : "Complete your profile details & social statistics to attract up to 3x more brand collaborations."}
+                    </p>
+                    <div className="w-full h-3 rounded-full bg-gray-900 border border-white/10 overflow-hidden">
+                      <div
+                        className="h-full bg-gradient-to-r from-violet-500 via-purple-500 to-cyan-400 rounded-full transition-all duration-700"
+                        style={{ width: `${completionScore}%` }}
+                      />
+                    </div>
+                  </div>
+
+                  <button
+                    onClick={() => navigate("/creator/creatorProfile")}
+                    className="self-start md:self-center flex items-center justify-center gap-2 px-5 py-3 rounded-xl bg-gradient-to-r from-violet-600 to-indigo-600 hover:from-violet-500 hover:to-indigo-500 text-white font-semibold transition shrink-0 shadow-lg shadow-violet-600/25"
+                  >
+                    <User size={17} />
+                    {completionScore === 100 ? "View / Edit Profile" : "Complete Profile"}
+                  </button>
+                </div>
+              </section>
+            );
+          })()}
 
           {/* =====================================
               STAT CARDS

@@ -1,4 +1,5 @@
 import React, { useState } from "react";
+import axios from "axios";
 import {
   User,
   Mail,
@@ -10,14 +11,42 @@ import {
   Edit,
   Save,
   X,
+  Loader2,
 } from "lucide-react";
 
 import authService from "../../services/authService";
+
+export const calculateProfileCompletion = (profileData) => {
+  if (!profileData) return 0;
+  const fields = [
+    { key: "name", weight: 10 },
+    { key: "email", weight: 10 },
+    { key: "instagramHandle", weight: 10 },
+    { key: "niche", weight: 15 },
+    { key: "country", weight: 10 },
+    { key: "bio", weight: 15 },
+    { key: "followers", weight: 10 },
+    { key: "engagementRate", weight: 10 },
+    { key: "averageReach", weight: 10 },
+  ];
+
+  let score = 0;
+  fields.forEach(({ key, weight }) => {
+    const val = profileData[key];
+    if (val && String(val).trim().length > 0) {
+      score += weight;
+    }
+  });
+
+  return Math.min(100, Math.max(0, score));
+};
 
 const CreatorProfile = () => {
   const user = authService.getCurrentUser();
 
   const [showEditModal, setShowEditModal] = useState(false);
+  const [isSaving, setIsSaving] = useState(false);
+  const [saveError, setSaveError] = useState("");
 
   // Dynamic data from logged-in user
   const [profile, setProfile] = useState({
@@ -29,6 +58,9 @@ const CreatorProfile = () => {
     bio:
       user?.bio ||
       "Content creator passionate about creating engaging and authentic content for brands.",
+    followers: user?.followers || "125K",
+    engagementRate: user?.engagementRate || "6.8%",
+    averageReach: user?.averageReach || "85K",
   });
 
   const [editData, setEditData] = useState(profile);
@@ -73,26 +105,43 @@ const CreatorProfile = () => {
     });
   };
 
-  const handleSaveProfile = () => {
-    setProfile(editData);
+  const handleSaveProfile = async () => {
+    setIsSaving(true);
+    setSaveError("");
 
-    // Update localStorage user as well
-    const updatedUser = {
-      ...user,
-      name: editData.name,
-      email: editData.email,
-      instagramHandle: editData.instagramHandle,
-      niche: editData.niche,
-      country: editData.country,
-      bio: editData.bio,
-    };
+    try {
+      if (user?.id) {
+        await axios.put(`http://localhost:5000/api/users/${user.id}`, editData);
+      }
 
-    localStorage.setItem(
-      "user",
-      JSON.stringify(updatedUser)
-    );
+      setProfile(editData);
 
-    setShowEditModal(false);
+      // Update localStorage user as well
+      const updatedUser = {
+        ...user,
+        name: editData.name,
+        email: editData.email,
+        instagramHandle: editData.instagramHandle,
+        niche: editData.niche,
+        country: editData.country,
+        bio: editData.bio,
+        followers: editData.followers,
+        engagementRate: editData.engagementRate,
+        averageReach: editData.averageReach,
+      };
+
+      localStorage.setItem(
+        "user",
+        JSON.stringify(updatedUser)
+      );
+
+      setShowEditModal(false);
+    } catch (err) {
+      console.error("Save profile error:", err);
+      setSaveError(err.response?.data?.message || "Failed to update profile.");
+    } finally {
+      setIsSaving(false);
+    }
   };
 
   return (
@@ -181,7 +230,7 @@ const CreatorProfile = () => {
             </div>
 
             <span className="text-violet-400 font-semibold">
-              85%
+              {calculateProfileCompletion(profile)}%
             </span>
 
           </div>
@@ -189,8 +238,8 @@ const CreatorProfile = () => {
           <div className="w-full h-3 rounded-full bg-gray-800 overflow-hidden">
 
             <div
-              className="h-full bg-gradient-to-r from-violet-500 to-cyan-400 rounded-full"
-              style={{ width: "85%" }}
+              className="h-full bg-gradient-to-r from-violet-500 to-cyan-400 rounded-full transition-all duration-500"
+              style={{ width: `${calculateProfileCompletion(profile)}%` }}
             />
 
           </div>
@@ -263,19 +312,19 @@ const CreatorProfile = () => {
 
               <StatCard
                 title="Followers"
-                value="125K"
+                value={profile.followers || "Not added"}
                 icon={<Users size={20} />}
               />
 
               <StatCard
                 title="Engagement Rate"
-                value="6.8%"
+                value={profile.engagementRate || "Not added"}
                 icon={<Heart size={20} />}
               />
 
               <StatCard
                 title="Average Reach"
-                value="85K"
+                value={profile.averageReach || "Not added"}
                 icon={<TrendingUp size={20} />}
               />
 
@@ -363,7 +412,13 @@ const CreatorProfile = () => {
             </div>
 
             {/* Form */}
-            <div className="p-6">
+            <div className="p-6 max-h-[80vh] overflow-y-auto">
+
+              {saveError && (
+                <div className="mb-4 p-3 rounded-xl bg-red-500/10 border border-red-500/20 text-red-400 text-sm">
+                  {saveError}
+                </div>
+              )}
 
               <div className="grid md:grid-cols-2 gap-4">
 
@@ -406,6 +461,43 @@ const CreatorProfile = () => {
 
               </div>
 
+              {/* Social Statistics Section in Edit Modal */}
+              <div className="mt-6 pt-5 border-t border-white/10">
+
+                <h3 className="text-sm font-semibold text-violet-400 mb-3">
+                  Social Statistics
+                </h3>
+
+                <div className="grid md:grid-cols-3 gap-4">
+
+                  <Input
+                    label="Followers"
+                    name="followers"
+                    value={editData.followers || ""}
+                    onChange={handleEditChange}
+                    placeholder="e.g. 125K"
+                  />
+
+                  <Input
+                    label="Engagement Rate"
+                    name="engagementRate"
+                    value={editData.engagementRate || ""}
+                    onChange={handleEditChange}
+                    placeholder="e.g. 6.8%"
+                  />
+
+                  <Input
+                    label="Average Reach"
+                    name="averageReach"
+                    value={editData.averageReach || ""}
+                    onChange={handleEditChange}
+                    placeholder="e.g. 85K"
+                  />
+
+                </div>
+
+              </div>
+
               <div className="mt-4">
 
                 <label className="block text-sm text-gray-400 mb-2">
@@ -416,7 +508,7 @@ const CreatorProfile = () => {
                   name="bio"
                   value={editData.bio}
                   onChange={handleEditChange}
-                  rows="4"
+                  rows="3"
                   className="w-full px-4 py-3 rounded-xl bg-[#111827] border border-white/10 text-white outline-none focus:border-violet-500 resize-none"
                   placeholder="Tell brands about yourself..."
                 />
@@ -428,7 +520,8 @@ const CreatorProfile = () => {
 
                 <button
                   onClick={() => setShowEditModal(false)}
-                  className="flex items-center gap-2 px-5 py-2.5 rounded-lg border border-white/10 hover:bg-white/5"
+                  disabled={isSaving}
+                  className="flex items-center gap-2 px-5 py-2.5 rounded-lg border border-white/10 hover:bg-white/5 disabled:opacity-50"
                 >
                   <X size={16} />
                   Cancel
@@ -436,10 +529,20 @@ const CreatorProfile = () => {
 
                 <button
                   onClick={handleSaveProfile}
-                  className="flex items-center gap-2 px-5 py-2.5 rounded-lg bg-violet-600 hover:bg-violet-700 font-semibold"
+                  disabled={isSaving}
+                  className="flex items-center gap-2 px-5 py-2.5 rounded-lg bg-violet-600 hover:bg-violet-700 font-semibold disabled:opacity-50"
                 >
-                  <Save size={16} />
-                  Save Changes
+                  {isSaving ? (
+                    <>
+                      <Loader2 size={16} className="animate-spin" />
+                      Saving...
+                    </>
+                  ) : (
+                    <>
+                      <Save size={16} />
+                      Save Changes
+                    </>
+                  )}
                 </button>
 
               </div>
