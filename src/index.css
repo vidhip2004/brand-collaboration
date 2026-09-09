@@ -1,1 +1,156 @@
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap');
 @import "tailwindcss";
+
+:root {
+	color-scheme: dark;
+	background: #050714;
+	color: #f8fafc;
+	font-family: 'Plus Jakarta Sans', 'Inter', system-ui, -apple-system, BlinkMacSystemFont, sans-serif;
+}
+
+html,
+body,
+#root {
+	min-height: 100%;
+	background-color: #050714;
+	color: #f8fafc;
+	font-family: 'Plus Jakarta Sans', 'Inter', system-ui, -apple-system, BlinkMacSystemFont, sans-serif;
+	-webkit-font-smoothing: antialiased;
+	-moz-osx-font-smoothing: grayscale;
+}
+
+body {
+	margin: 0;
+	overflow-x: hidden;
+}
+
+/* Custom Text Selection */
+::selection {
+	background: rgba(139, 92, 246, 0.4);
+	color: #ffffff;
+}
+
+/* Custom Smooth Scrollbar */
+::-webkit-scrollbar {
+	width: 8px;
+	height: 8px;
+}
+
+::-webkit-scrollbar-track {
+	background: #080c1a;
+}
+
+::-webkit-scrollbar-thumb {
+	background: rgba(139, 92, 246, 0.3);
+	border-radius: 9999px;
+	border: 2px solid #080c1a;
+	transition: background 0.2s ease;
+}
+
+::-webkit-scrollbar-thumb:hover {
+	background: rgba(139, 92, 246, 0.6);
+}
+
+/* Glassmorphism & UI Utility Classes */
+.glass-card {
+	background: rgba(15, 23, 42, 0.65);
+	backdrop-filter: blur(16px);
+	-webkit-backdrop-filter: blur(16px);
+	border: 1px solid rgba(255, 255, 255, 0.08);
+	box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.37);
+}
+
+.glass-card-hover {
+	transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.glass-card-hover:hover {
+	border-color: rgba(139, 92, 246, 0.4);
+	transform: translateY(-3px);
+	box-shadow: 0 16px 40px -10px rgba(139, 92, 246, 0.2);
+}
+
+.glass-panel {
+	background: rgba(11, 16, 32, 0.85);
+	backdrop-filter: blur(20px);
+	-webkit-backdrop-filter: blur(20px);
+	border: 1px solid rgba(255, 255, 255, 0.08);
+}
+
+.gradient-text {
+	background: linear-gradient(135deg, #c084fc 0%, #38bdf8 100%);
+	-webkit-background-clip: text;
+	-webkit-text-fill-color: transparent;
+}
+
+.gradient-text-purple {
+	background: linear-gradient(135deg, #e879f9 0%, #818cf8 100%);
+	-webkit-background-clip: text;
+	-webkit-text-fill-color: transparent;
+}
+
+.gradient-text-cyan {
+	background: linear-gradient(135deg, #38bdf8 0%, #34d399 100%);
+	-webkit-background-clip: text;
+	-webkit-text-fill-color: transparent;
+}
+
+.glow-purple {
+	box-shadow: 0 0 25px -5px rgba(139, 92, 246, 0.4);
+}
+
+.glow-cyan {
+	box-shadow: 0 0 25px -5px rgba(6, 182, 212, 0.4);
+}
+
+/* Polished Form Inputs */
+input,
+textarea,
+select {
+	background-color: rgba(15, 23, 42, 0.7) !important;
+	border-color: rgba(255, 255, 255, 0.12) !important;
+	color: #f8fafc !important;
+	transition: all 0.2s ease-in-out;
+}
+
+input:focus,
+textarea:focus,
+select:focus {
+	border-color: #8b5cf6 !important;
+	box-shadow: 0 0 0 3px rgba(139, 92, 246, 0.25) !important;
+	outline: none !important;
+}
+
+input::placeholder,
+textarea::placeholder {
+	color: rgba(148, 163, 184, 0.6) !important;
+}
+
+/* Animations */
+@keyframes float {
+	0%, 100% {
+		transform: translateY(0px);
+	}
+	50% {
+		transform: translateY(-8px);
+	}
+}
+
+.animate-float {
+	animation: float 4s ease-in-out infinite;
+}
+
+@keyframes pulseGlow {
+	0%, 100% {
+		opacity: 0.25;
+		transform: scale(1);
+	}
+	50% {
+		opacity: 0.45;
+		transform: scale(1.04);
+	}
+}
+
+.animate-pulse-glow {
+	animation: pulseGlow 6s ease-in-out infinite;
+}

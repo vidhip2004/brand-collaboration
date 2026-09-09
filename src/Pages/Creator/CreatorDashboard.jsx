@@ -496,7 +496,7 @@ const CreatorDashboard = () => {
   // ==========================================
 
   return (
-    <div className="min-h-screen bg-[#070b14] text-white">
+    <div className="dashboard-light min-h-screen bg-[#070b14] text-white">
 
       {/* MOBILE OVERLAY */}
 
