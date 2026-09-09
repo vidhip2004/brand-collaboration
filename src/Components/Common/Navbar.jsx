@@ -29,7 +29,7 @@ const Navbar = () => {
 
         {/* Buttons */}
         <div className="hidden md:flex gap-4">
-          <button className="hover:bg-violet-400 text-white py-2 px-4 rounded-lg transition">
+          <button className="hover:bg-violet-400 text-white py-2 px-4 rounded-lg transition" onClick={()=>navigate("/login")}>
             Login
           </button>
           <button className="hover:bg-violet-400 text-white py-2 px-4 rounded-lg transition" onClick={()=>navigate("/signup")}>
