@@ -10,11 +10,14 @@ import {
   X,
   Globe,
   Megaphone,
+  CheckCircle,
+  ArrowLeft,
 } from "lucide-react";
-
+import { useNavigate } from "react-router-dom";
 import authService from "../../services/authService";
 
 const BrandProfile = () => {
+  const navigate = useNavigate();
   const user = authService.getCurrentUser();
 
   const [showEditModal, setShowEditModal] = useState(false);
@@ -35,27 +38,26 @@ const BrandProfile = () => {
 
   const [editData, setEditData] = useState(profile);
 
-  // Not logged in
   if (!user) {
     return (
-      <div className="min-h-screen bg-[#070b14] text-white flex items-center justify-center">
-
-        <div className="text-center">
-
-          <div className="text-5xl mb-5">
+      <div className="min-h-screen bg-[#FAF9F6] text-[#2B241F] flex items-center justify-center px-6">
+        <div className="text-center max-w-sm bg-[#FAF9F6] p-8 rounded-2xl border border-[#D7C9B8] shadow-xs">
+          <div className="w-16 h-16 mx-auto rounded-xl bg-[#EDE7DC] border border-[#D7C9B8] flex items-center justify-center text-[#8B6F5A] text-2xl">
             🔒
           </div>
-
-          <h1 className="text-2xl font-bold">
-            Please Login
+          <h1 className="text-2xl font-bold mt-5 text-[#2B241F]">
+            Please Sign In
           </h1>
-
-          <p className="text-gray-400 mt-2">
+          <p className="text-[#4A3A2E]/75 text-sm mt-2">
             You need to login to view your brand profile.
           </p>
-
+          <button
+            onClick={() => navigate("/login")}
+            className="mt-6 w-full bg-[#8B6F5A] hover:bg-[#785D4A] text-white py-3 rounded-xl font-semibold shadow-xs transition"
+          >
+            Go to Login
+          </button>
         </div>
-
       </div>
     );
   }
@@ -65,6 +67,7 @@ const BrandProfile = () => {
 
     return name
       .split(" ")
+      .filter(Boolean)
       .map((word) => word[0])
       .join("")
       .substring(0, 2)
@@ -81,7 +84,6 @@ const BrandProfile = () => {
   const handleSaveProfile = () => {
     setProfile(editData);
 
-    // Update localStorage
     const updatedUser = {
       ...user,
       name: editData.name,
@@ -94,70 +96,60 @@ const BrandProfile = () => {
       bio: editData.bio,
     };
 
-    localStorage.setItem(
-      "user",
-      JSON.stringify(updatedUser)
-    );
-
+    localStorage.setItem("user", JSON.stringify(updatedUser));
     setShowEditModal(false);
   };
 
   return (
-    <div className="min-h-screen bg-[#070b14] text-white">
-
-      <main className="max-w-7xl mx-auto px-6 py-10">
+    <div className="min-h-screen bg-[#FAF9F6] text-[#2B241F]">
+      <main className="max-w-6xl mx-auto px-6 py-10 space-y-7">
+        {/* Back Button */}
+        <button
+          onClick={() => navigate("/brand/dashboard")}
+          className="flex items-center gap-2 text-[#4A3A2E]/70 hover:text-[#2B241F] font-semibold text-sm transition"
+        >
+          <ArrowLeft size={18} />
+          Back to Dashboard
+        </button>
 
         {/* ========================= */}
         {/* PROFILE HEADER */}
         {/* ========================= */}
-
-        <section className="rounded-2xl border border-white/10 bg-white/[0.03] p-6">
-
+        <section className="rounded-2xl border border-[#D7C9B8] bg-[#FAF9F6] p-6 md:p-8 shadow-xs relative overflow-hidden">
           <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-6">
-
             <div className="flex items-center gap-5">
-
               {/* Company Avatar */}
-              <div className="w-24 h-24 md:w-28 md:h-28 rounded-2xl bg-gradient-to-br from-violet-500 to-cyan-400 flex items-center justify-center text-3xl font-bold shadow-lg shadow-violet-500/20">
-                {getInitials(
-                  profile.companyName || profile.name
-                )}
+              <div className="w-20 h-20 md:w-24 md:h-24 rounded-2xl bg-[#EDE7DC] border border-[#D7C9B8] flex items-center justify-center text-3xl font-black text-[#8B6F5A] shrink-0">
+                {getInitials(profile.companyName || profile.name)}
               </div>
 
               <div>
-
-                <h1 className="text-2xl md:text-3xl font-bold">
-                  {profile.companyName ||
-                    profile.name ||
-                    "Brand"}
+                <h1 className="text-2xl md:text-3xl font-black text-[#2B241F]">
+                  {profile.companyName || profile.name || "Brand"}
                 </h1>
 
-                <p className="text-violet-400 mt-1">
-                  {profile.industry || "Brand"}
+                <p className="text-sm font-semibold text-[#8B6F5A] mt-1">
+                  {profile.industry || "Brand Collaboration Partner"}
                 </p>
 
-                <div className="flex flex-wrap items-center gap-3 mt-3">
-
-                  <span className="px-3 py-1 rounded-full bg-violet-500/10 border border-violet-500/20 text-violet-300 text-sm">
-                    Brand
+                <div className="flex flex-wrap items-center gap-2.5 mt-3">
+                  <span className="px-3 py-1 rounded-full bg-[#EDE7DC] border border-[#D7C9B8] text-[#4A3A2E] text-xs font-semibold">
+                    Brand Account
                   </span>
 
-                  <span className="px-3 py-1 rounded-full bg-green-500/10 border border-green-500/20 text-green-400 text-sm">
-                    ✓ Verified Profile
+                  <span className="px-3 py-1 rounded-full bg-[#EDE7DC] border border-[#D7C9B8] text-[#2B241F] text-xs font-semibold flex items-center gap-1">
+                    <CheckCircle size={13} className="text-[#8B6F5A]" />
+                    Verified Partner
                   </span>
 
+                  {profile.country && (
+                    <span className="flex items-center gap-1 text-[#4A3A2E] text-xs font-medium px-2.5 py-1 rounded-full bg-[#EDE7DC] border border-[#D7C9B8]">
+                      <MapPin size={12} className="text-[#8B6F5A]" />
+                      {profile.country}
+                    </span>
+                  )}
                 </div>
-
-                <div className="flex items-center gap-2 text-gray-400 text-sm mt-3">
-
-                  <MapPin size={15} />
-
-                  {profile.country || "Country not added"}
-
-                </div>
-
               </div>
-
             </div>
 
             {/* Edit Button */}
@@ -166,212 +158,172 @@ const BrandProfile = () => {
                 setEditData(profile);
                 setShowEditModal(true);
               }}
-              className="flex items-center justify-center gap-2 bg-violet-600 hover:bg-violet-700 px-5 py-3 rounded-xl font-semibold transition"
+              className="flex items-center justify-center gap-2 bg-[#8B6F5A] hover:bg-[#785D4A] text-white px-5 py-3 rounded-xl font-bold text-sm shadow-xs transition shrink-0"
             >
-              <Edit size={17} />
+              <Edit size={16} />
               Edit Profile
             </button>
-
           </div>
-
         </section>
 
         {/* ========================= */}
         {/* PROFILE COMPLETION */}
         {/* ========================= */}
-
-        <section className="mt-6 rounded-2xl border border-white/10 bg-white/[0.03] p-6">
-
+        <section className="rounded-2xl border border-[#D7C9B8] bg-[#FAF9F6] p-6 shadow-xs">
           <div className="flex justify-between items-center mb-3">
-
             <div>
-
-              <h2 className="font-semibold">
-                Profile Completion
+              <h2 className="font-bold text-[#2B241F] text-base">
+                Profile Completeness
               </h2>
-
-              <p className="text-sm text-gray-400 mt-1">
-                Complete your profile to attract more creators.
+              <p className="text-xs text-[#4A3A2E]/70 mt-0.5">
+                Detailed profiles achieve higher collaboration interest from creators
               </p>
-
             </div>
 
-            <span className="text-violet-400 font-semibold">
-              90%
+            <span className="text-[#8B6F5A] font-extrabold text-lg">
+              95%
             </span>
-
           </div>
 
-          <div className="w-full h-3 rounded-full bg-gray-800 overflow-hidden">
-
+          <div className="w-full h-2.5 rounded-full bg-[#EDE7DC] overflow-hidden">
             <div
-              className="h-full bg-gradient-to-r from-violet-500 to-cyan-400 rounded-full"
-              style={{ width: "90%" }}
+              className="h-full bg-[#8B6F5A] rounded-full transition-all duration-500"
+              style={{ width: "95%" }}
             />
-
           </div>
-
         </section>
 
         {/* ========================= */}
         {/* COMPANY INFORMATION */}
         {/* ========================= */}
-
-        <section className="mt-6 grid lg:grid-cols-3 gap-6">
-
+        <section className="grid lg:grid-cols-3 gap-7">
           {/* About Brand */}
-          <div className="lg:col-span-2 rounded-2xl border border-white/10 bg-white/[0.03] p-6">
-
+          <div className="lg:col-span-2 rounded-2xl border border-[#D7C9B8] bg-[#FAF9F6] p-6 md:p-8 shadow-xs">
             <div className="flex items-center gap-3 mb-5">
-
-              <div className="p-2 rounded-lg bg-violet-500/10 text-violet-400">
+              <div className="p-2.5 rounded-xl bg-[#EDE7DC] text-[#8B6F5A] border border-[#D7C9B8]">
                 <Building2 size={20} />
               </div>
 
-              <h2 className="text-xl font-semibold">
-                About the Brand
-              </h2>
-
+              <div>
+                <h2 className="text-lg font-bold text-[#2B241F]">
+                  About the Brand
+                </h2>
+                <p className="text-xs text-[#4A3A2E]/70">
+                  Brand story and mission statement
+                </p>
+              </div>
             </div>
 
-            <p className="text-gray-400 leading-7">
+            <p className="text-[#4A3A2E]/80 text-sm leading-relaxed font-medium">
               {profile.bio}
             </p>
 
-            <div className="grid md:grid-cols-2 gap-5 mt-7">
-
+            <div className="grid md:grid-cols-2 gap-4 mt-7">
               <InfoItem
-                icon={<Building2 size={17} />}
+                icon={<Building2 size={16} />}
                 label="Company"
-                value={
-                  profile.companyName ||
-                  "Not added"
-                }
+                value={profile.companyName || "Not added"}
               />
 
               <InfoItem
-                icon={<User size={17} />}
+                icon={<User size={16} />}
                 label="Contact Person"
-                value={
-                  profile.contactPerson ||
-                  profile.name ||
-                  "Not added"
-                }
+                value={profile.contactPerson || profile.name || "Not added"}
               />
 
               <InfoItem
-                icon={<Mail size={17} />}
+                icon={<Mail size={16} />}
                 label="Email"
+                value={profile.email || "Not available"}
+              />
+
+              <InfoItem
+                icon={<span className="text-xs font-black">@</span>}
+                label="Instagram"
                 value={
-                  profile.email ||
-                  "Not available"
+                  profile.instagramHandle
+                    ? `@${profile.instagramHandle.replace("@", "")}`
+                    : "Not added"
                 }
               />
 
-            <InfoItem
-  icon={<span className="text-sm font-bold">@</span>}
-  label="Instagram"
-  value={profile.instagramHandle || "Not added"}
-/>
-
               <InfoItem
-                icon={<Briefcase size={17} />}
+                icon={<Briefcase size={16} />}
                 label="Industry"
-                value={
-                  profile.industry ||
-                  "Not added"
-                }
+                value={profile.industry || "Not added"}
               />
 
               <InfoItem
-                icon={<MapPin size={17} />}
+                icon={<MapPin size={16} />}
                 label="Country"
-                value={
-                  profile.country ||
-                  "Not added"
-                }
+                value={profile.country || "Not added"}
               />
-
             </div>
-
           </div>
 
           {/* Brand Stats */}
-          <div className="rounded-2xl border border-white/10 bg-white/[0.03] p-6">
+          <div className="rounded-2xl border border-[#D7C9B8] bg-[#FAF9F6] p-6 shadow-xs flex flex-col justify-between">
+            <div>
+              <h2 className="text-lg font-bold text-[#2B241F] mb-1">
+                Collaboration Metrics
+              </h2>
+              <p className="text-xs text-[#4A3A2E]/70 mb-5">
+                Lifetime platform statistics
+              </p>
 
-            <h2 className="text-xl font-semibold mb-5">
-              Brand Statistics
-            </h2>
+              <div className="space-y-3.5">
+                <StatCard
+                  title="Campaigns Launched"
+                  value="12"
+                  icon={<Megaphone size={19} />}
+                />
 
-            <div className="space-y-4">
+                <StatCard
+                  title="Active Collaborations"
+                  value="3"
+                  icon={<Globe size={19} />}
+                />
 
-              <StatCard
-                title="Campaigns Created"
-                value="12"
-                icon={<Megaphone size={20} />}
-              />
-
-              <StatCard
-                title="Active Campaigns"
-                value="3"
-                icon={<Globe size={20} />}
-              />
-
-              <StatCard
-                title="Collaborations"
-                value="27"
-                icon={<User size={20} />}
-              />
-
+                <StatCard
+                  title="Creator Partnerships"
+                  value="27"
+                  icon={<User size={19} />}
+                />
+              </div>
             </div>
-
           </div>
-
         </section>
 
         {/* ========================= */}
-        {/* BRAND DETAILS */}
+        {/* BRAND OVERVIEW GRID */}
         {/* ========================= */}
-
-        <section className="mt-6 rounded-2xl border border-white/10 bg-white/[0.03] p-6">
-
-          <h2 className="text-xl font-semibold mb-5">
-            Brand Information
+        <section className="rounded-2xl border border-[#D7C9B8] bg-[#FAF9F6] p-6 md:p-8 shadow-xs">
+          <h2 className="text-lg font-bold text-[#2B241F] mb-1">
+            Registered Account Information
           </h2>
+          <p className="text-xs text-[#4A3A2E]/70 mb-6">
+            Official details associated with your verified BrandVerse account
+          </p>
 
-          <div className="grid md:grid-cols-3 gap-5">
-
+          <div className="grid md:grid-cols-3 gap-4">
             <DetailCard
               title="Company Name"
-              value={
-                profile.companyName ||
-                "Not added"
-              }
+              value={profile.companyName || "Not added"}
             />
 
             <DetailCard
               title="Contact Person"
-              value={
-                profile.contactPerson ||
-                profile.name ||
-                "Not added"
-              }
+              value={profile.contactPerson || profile.name || "Not added"}
             />
 
             <DetailCard
-              title="Email"
-              value={
-                profile.email ||
-                "Not added"
-              }
+              title="Email Address"
+              value={profile.email || "Not added"}
             />
 
             <DetailCard
               title="Industry"
-              value={
-                profile.industry ||
-                "Not added"
-              }
+              value={profile.industry || "Not added"}
             />
 
             <DetailCard
@@ -384,51 +336,41 @@ const BrandProfile = () => {
             />
 
             <DetailCard
-              title="Country"
-              value={
-                profile.country ||
-                "Not added"
-              }
+              title="Country / HQ"
+              value={profile.country || "Not added"}
             />
-
           </div>
-
         </section>
-
       </main>
 
       {/* ========================= */}
       {/* EDIT MODAL */}
       {/* ========================= */}
-
       {showEditModal && (
-        <div className="fixed inset-0 z-[100] flex items-center justify-center bg-black/70 backdrop-blur-sm p-4">
-
-          <div className="w-full max-w-2xl max-h-[90vh] overflow-y-auto rounded-2xl border border-white/10 bg-[#0d1421] shadow-2xl">
-
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-[#2B241F]/40 backdrop-blur-xs p-4">
+          <div className="w-full max-w-2xl max-h-[90vh] overflow-y-auto rounded-2xl border border-[#D7C9B8] bg-[#FAF9F6] shadow-xl">
             {/* Header */}
-            <div className="sticky top-0 flex items-center justify-between px-6 py-5 border-b border-white/10 bg-[#0d1421]">
-
-              <h2 className="text-xl font-bold">
-                Edit Brand Profile
-              </h2>
+            <div className="sticky top-0 flex items-center justify-between px-6 py-5 border-b border-[#D7C9B8] bg-[#FAF9F6] z-10">
+              <div>
+                <h2 className="text-lg font-bold text-[#2B241F]">
+                  Edit Brand Profile
+                </h2>
+                <p className="text-xs text-[#4A3A2E]/70">
+                  Update your public company information
+                </p>
+              </div>
 
               <button
-                onClick={() =>
-                  setShowEditModal(false)
-                }
-                className="p-2 rounded-lg text-gray-400 hover:text-white hover:bg-white/5"
+                onClick={() => setShowEditModal(false)}
+                className="p-2 rounded-xl text-[#4A3A2E]/60 hover:text-[#2B241F] hover:bg-[#EDE7DC] transition"
               >
                 <X size={20} />
               </button>
-
             </div>
 
             {/* Form */}
-            <div className="p-6">
-
+            <div className="p-6 md:p-8 space-y-5">
               <div className="grid md:grid-cols-2 gap-4">
-
                 <Input
                   label="Company Name"
                   name="companyName"
@@ -444,14 +386,14 @@ const BrandProfile = () => {
                 />
 
                 <Input
-                  label="Email"
+                  label="Official Email"
                   name="email"
                   value={editData.email}
                   onChange={handleEditChange}
                 />
 
                 <Input
-                  label="Instagram"
+                  label="Instagram Handle"
                   name="instagramHandle"
                   value={editData.instagramHandle}
                   onChange={handleEditChange}
@@ -471,14 +413,12 @@ const BrandProfile = () => {
                   value={editData.country}
                   onChange={handleEditChange}
                 />
-
               </div>
 
               {/* Bio */}
-              <div className="mt-4">
-
-                <label className="block text-sm text-gray-400 mb-2">
-                  Bio
+              <div>
+                <label className="block text-xs font-bold text-[#4A3A2E] uppercase tracking-wider mb-2">
+                  Brand Biography / Vision
                 </label>
 
                 <textarea
@@ -486,133 +426,92 @@ const BrandProfile = () => {
                   value={editData.bio}
                   onChange={handleEditChange}
                   rows="4"
-                  className="w-full px-4 py-3 rounded-xl bg-[#111827] border border-white/10 text-white outline-none focus:border-violet-500 resize-none"
-                  placeholder="Tell creators about your brand..."
+                  className="w-full px-4 py-3 rounded-xl bg-[#FAF9F6] border border-[#D7C9B8] text-[#2B241F] placeholder:text-[#4A3A2E]/40 outline-none focus:border-[#8B6F5A] focus:ring-2 focus:ring-[#8B6F5A]/15 transition text-sm font-medium resize-none"
+                  placeholder="Tell creators about your brand mission..."
                 />
-
               </div>
 
               {/* Buttons */}
-              <div className="flex justify-end gap-3 mt-6">
-
+              <div className="flex justify-end gap-3 pt-4 border-t border-[#D7C9B8]">
                 <button
-                  onClick={() =>
-                    setShowEditModal(false)
-                  }
-                  className="flex items-center gap-2 px-5 py-2.5 rounded-lg border border-white/10 hover:bg-white/5"
+                  onClick={() => setShowEditModal(false)}
+                  className="px-5 py-2.5 rounded-xl border border-[#D7C9B8] hover:bg-[#EDE7DC] text-[#4A3A2E] font-semibold text-sm transition"
                 >
-                  <X size={16} />
                   Cancel
                 </button>
 
                 <button
                   onClick={handleSaveProfile}
-                  className="flex items-center gap-2 px-5 py-2.5 rounded-lg bg-violet-600 hover:bg-violet-700 font-semibold"
+                  className="flex items-center gap-2 px-6 py-2.5 rounded-xl bg-[#8B6F5A] hover:bg-[#785D4A] text-white font-bold text-sm shadow-xs transition"
                 >
                   <Save size={16} />
                   Save Changes
                 </button>
-
               </div>
-
             </div>
-
           </div>
-
         </div>
       )}
-
     </div>
   );
 };
 
-
 /* ========================= */
-/* COMPONENTS */
+/* SUB-COMPONENTS */
 /* ========================= */
-
-const InfoItem = ({
-  icon,
-  label,
-  value,
-}) => {
+const InfoItem = ({ icon, label, value }) => {
   return (
-    <div>
-
-      <div className="flex items-center gap-2 text-gray-500 text-sm">
-        {icon}
+    <div className="p-3.5 rounded-xl border border-[#D7C9B8] bg-[#EDE7DC]/30">
+      <div className="flex items-center gap-2 text-[#4A3A2E]/70 text-xs font-bold uppercase tracking-wider">
+        <span className="text-[#8B6F5A]">{icon}</span>
         {label}
       </div>
 
-      <p className="mt-2 text-gray-200">
+      <p className="mt-1 text-[#2B241F] font-bold text-sm truncate">
         {value}
       </p>
-
     </div>
   );
 };
 
-
-const StatCard = ({
-  title,
-  value,
-  icon,
-}) => {
+const StatCard = ({ title, value, icon }) => {
   return (
-    <div className="rounded-xl border border-white/10 bg-[#111827]/70 p-4">
-
+    <div className="rounded-xl border border-[#D7C9B8] bg-[#EDE7DC]/30 p-4">
       <div className="flex items-center justify-between">
-
-        <span className="text-gray-400">
+        <span className="text-xs font-bold text-[#4A3A2E]/70 uppercase tracking-wider">
           {title}
         </span>
 
-        <span className="text-violet-400">
+        <span className="p-2 rounded-xl border bg-[#EDE7DC] text-[#8B6F5A] border-[#D7C9B8]">
           {icon}
         </span>
-
       </div>
 
-      <p className="text-2xl font-bold mt-2">
+      <p className="text-2xl font-black text-[#2B241F] mt-2">
         {value}
       </p>
-
     </div>
   );
 };
 
-
-const DetailCard = ({
-  title,
-  value,
-}) => {
+const DetailCard = ({ title, value }) => {
   return (
-    <div className="rounded-xl border border-white/10 bg-[#111827]/70 p-5">
-
-      <p className="text-sm text-gray-500">
+    <div className="rounded-xl border border-[#D7C9B8] bg-[#EDE7DC]/30 p-4">
+      <p className="text-[11px] font-bold uppercase tracking-wider text-[#4A3A2E]/70">
         {title}
       </p>
 
-      <p className="mt-2 text-gray-200 break-words">
+      <p className="mt-1 font-bold text-[#2B241F] text-sm break-words">
         {value}
       </p>
-
     </div>
   );
 };
 
-
-const Input = ({
-  label,
-  name,
-  value,
-  onChange,
-  placeholder,
-}) => {
+const Input = ({ label, name, value, onChange, placeholder }) => {
   return (
     <div>
-
-      <label className="block text-sm text-gray-400 mb-2">
+      <label className="block text-xs font-bold text-[#4A3A2E] uppercase tracking-wider mb-2">
         {label}
       </label>
 
@@ -622,12 +521,10 @@ const Input = ({
         value={value}
         onChange={onChange}
         placeholder={placeholder}
-        className="w-full px-4 py-3 rounded-xl bg-[#111827] border border-white/10 text-white outline-none focus:border-violet-500 transition"
+        className="w-full px-4 py-3 rounded-xl bg-[#FAF9F6] border border-[#D7C9B8] text-[#2B241F] placeholder:text-[#4A3A2E]/40 outline-none focus:border-[#8B6F5A] focus:ring-2 focus:ring-[#8B6F5A]/15 transition text-sm font-medium"
       />
-
     </div>
   );
 };
-
 
 export default BrandProfile;

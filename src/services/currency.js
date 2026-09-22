@@ -86,6 +86,36 @@ const COUNTRY_CURRENCY_MAP = {
     locale: "fr-FR",
     name: "Euro",
   },
+  Paris: {
+    code: "EUR",
+    symbol: "€",
+    locale: "fr-FR",
+    name: "Euro",
+  },
+  French: {
+    code: "EUR",
+    symbol: "€",
+    locale: "fr-FR",
+    name: "Euro",
+  },
+  Italy: {
+    code: "EUR",
+    symbol: "€",
+    locale: "it-IT",
+    name: "Euro",
+  },
+  Spain: {
+    code: "EUR",
+    symbol: "€",
+    locale: "es-ES",
+    name: "Euro",
+  },
+  Europe: {
+    code: "EUR",
+    symbol: "€",
+    locale: "de-DE",
+    name: "Euro",
+  },
 
   Japan: {
     code: "JPY",
@@ -128,8 +158,10 @@ export const getCurrencyFromCountry = (country) => {
   const matchedCountry = Object.keys(
     COUNTRY_CURRENCY_MAP
   ).find(
-    (key) =>
-      key.toLowerCase() === normalizedCountry
+    (key) => {
+      const k = key.toLowerCase();
+      return k === normalizedCountry || normalizedCountry.includes(k);
+    }
   );
 
   return matchedCountry

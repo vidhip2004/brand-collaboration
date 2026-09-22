@@ -1,5 +1,4 @@
 import React, { useState } from "react";
-
 import {
   Sparkles,
   CheckCircle2,
@@ -8,220 +7,137 @@ import {
   ChevronUp,
 } from "lucide-react";
 
-
 const MatchScore = ({
   score = 0,
   level = "Match",
   reasons = [],
   compact = false,
 }) => {
-
-  const [
-    showDetails,
-    setShowDetails,
-  ] = useState(false);
-
+  const [showDetails, setShowDetails] = useState(false);
 
   const getScoreText = () => {
-
     if (score >= 85) {
-      return "text-emerald-400";
+      return "text-[#2B241F]";
     }
-
     if (score >= 70) {
-      return "text-cyan-400";
+      return "text-[#4A3A2E]";
     }
-
     if (score >= 50) {
-      return "text-yellow-400";
+      return "text-[#8B6F5A]";
     }
-
-    return "text-orange-400";
+    return "text-[#C98B6B]";
   };
-
 
   const getScoreBackground = () => {
-
-    if (score >= 85) {
-      return "bg-emerald-500/10 border-emerald-500/20";
-    }
-
-    if (score >= 70) {
-      return "bg-cyan-500/10 border-cyan-500/20";
-    }
-
-    if (score >= 50) {
-      return "bg-yellow-500/10 border-yellow-500/20";
-    }
-
-    return "bg-orange-500/10 border-orange-500/20";
+    return "bg-[#FAF9F6] border-[#D7C9B8]";
   };
-
 
   const getProgressWidth = () => {
-    return `${Math.min(
-      100,
-      Math.max(0, score)
-    )}%`;
+    return `${Math.min(100, Math.max(0, score))}%`;
   };
-
 
   return (
     <div
-      className={`rounded-xl border ${getScoreBackground()} ${
+      className={`rounded-2xl border ${getScoreBackground()} ${
         compact ? "p-3" : "p-4"
-      }`}
+      } font-sans shadow-2xs`}
     >
-
       {/* SCORE HEADER */}
-
       <div className="flex items-center justify-between gap-3">
-
-        <div className="flex items-center gap-2">
-
-          <div className="flex h-9 w-9 items-center justify-center rounded-lg bg-violet-500/10">
-
-            <Sparkles
-              size={17}
-              className="text-violet-400"
-            />
-
+        <div className="flex items-center gap-2.5">
+          <div className="flex h-8 w-8 items-center justify-center rounded-xl bg-[#EDE7DC] border border-[#D7C9B8]/60 shadow-2xs">
+            <Sparkles size={15} className="text-[#8B6F5A]" />
           </div>
 
           <div>
-
-            <p className="text-xs text-gray-500">
+            <p className="text-[10px] uppercase font-bold text-[#4A3A2E]/60 tracking-wider">
               Smart Match
             </p>
-
-            <p
-              className={`font-semibold ${getScoreText()}`}
-            >
+            <p className={`text-xs font-black ${getScoreText()}`}>
               {level}
             </p>
-
           </div>
-
         </div>
-
 
         <div className="text-right">
-
-          <p
-            className={`text-2xl font-bold ${getScoreText()}`}
-          >
+          <p className={`text-xl font-black ${getScoreText()}`}>
             {score}%
           </p>
-
-          <p className="text-[10px] text-gray-500">
+          <p className="text-[10px] text-[#4A3A2E]/60 font-medium">
             compatibility
           </p>
-
         </div>
-
       </div>
 
-
       {/* PROGRESS BAR */}
-
-      <div className="mt-3 h-2 w-full overflow-hidden rounded-full bg-gray-800">
-
+      <div className="mt-2.5 h-2 w-full overflow-hidden rounded-full bg-[#EDE7DC]">
         <div
-          className="h-full rounded-full bg-gradient-to-r from-violet-500 to-cyan-400 transition-all duration-700"
+          className="h-full rounded-full bg-gradient-to-r from-[#8B6F5A] to-[#C98B6B] transition-all duration-700"
           style={{
             width: getProgressWidth(),
           }}
         />
-
       </div>
 
-
       {/* DETAILS BUTTON */}
-
       {reasons.length > 0 && (
-
         <button
           type="button"
-          onClick={() =>
-            setShowDetails(
-              !showDetails
-            )
-          }
-          className="mt-3 flex w-full items-center justify-between text-xs text-gray-400 transition hover:text-white"
+          onClick={() => setShowDetails(!showDetails)}
+          className="mt-2.5 flex w-full items-center justify-between text-[11px] font-bold text-[#4A3A2E]/70 transition hover:text-[#2B241F]"
         >
-
-          <span className="flex items-center gap-2">
-
-            <Info size={14} />
-
+          <span className="flex items-center gap-1.5">
+            <Info size={13} className="text-[#8B6F5A]" />
             Why this match?
-
           </span>
 
           {showDetails ? (
-            <ChevronUp size={15} />
+            <ChevronUp size={14} />
           ) : (
-            <ChevronDown size={15} />
+            <ChevronDown size={14} />
           )}
-
         </button>
-
       )}
 
-
-      {/* DETAILS */}
-
+      {/* DETAILS LIST */}
       {showDetails && (
+        <div className="mt-2.5 space-y-1.5 border-t border-[#D7C9B8]/40 pt-2.5">
+          {reasons.map((reason, index) => {
+            const isInfo = reason.type === "info";
 
-        <div className="mt-3 space-y-2 border-t border-white/10 pt-3">
+            return (
+              <div
+                key={`${reason.type}-${index}`}
+                className="flex items-start gap-2 text-xs"
+              >
+                {isInfo ? (
+                  <Info
+                    size={13}
+                    className="mt-0.5 shrink-0 text-[#4A3A2E]/50"
+                  />
+                ) : (
+                  <CheckCircle2
+                    size={13}
+                    className="mt-0.5 shrink-0 text-[#8B6F5A]"
+                  />
+                )}
 
-          {reasons.map(
-            (reason, index) => {
-
-              const isInfo =
-                reason.type ===
-                "info";
-
-              return (
-                <div
-                  key={`${reason.type}-${index}`}
-                  className="flex items-start gap-2 text-xs"
+                <span
+                  className={
+                    isInfo
+                      ? "text-[#4A3A2E]/60 font-medium"
+                      : "text-[#4A3A2E] font-semibold"
+                  }
                 >
-
-                  {isInfo ? (
-                    <Info
-                      size={14}
-                      className="mt-0.5 shrink-0 text-gray-500"
-                    />
-                  ) : (
-                    <CheckCircle2
-                      size={14}
-                      className="mt-0.5 shrink-0 text-emerald-400"
-                    />
-                  )}
-
-                  <span
-                    className={
-                      isInfo
-                        ? "text-gray-500"
-                        : "text-gray-300"
-                    }
-                  >
-                    {reason.label}
-                  </span>
-
-                </div>
-              );
-            }
-          )}
-
+                  {reason.label}
+                </span>
+              </div>
+            );
+          })}
         </div>
-
       )}
-
     </div>
   );
 };
-
 
 export default MatchScore;

@@ -5,7 +5,7 @@ const Signup = () => {
   const [role, setRole] = useState("brand");
 
   return (
-    <div className="min-h-screen bg-[#080815]">
+    <div className="min-h-screen bg-[#FAF9F6]">
       <AuthLayout role={role} setRole={setRole} />
     </div>
   );

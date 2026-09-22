@@ -5,22 +5,25 @@ import {
   ArrowLeft,
   Calendar,
   Clock,
-  IndianRupee,
   MapPin,
   Users,
   CheckCircle,
   X,
   Send,
   Briefcase,
+  Sparkles,
 } from "lucide-react";
 
 import authService from "../../services/authService";
+import {
+  getCurrencyFromCountry,
+  formatCurrency,
+  convertCurrency,
+  getCurrencySymbol,
+} from "../../services/currency";
 
-const CAMPAIGN_API =
-  "http://localhost:5000/api/campaigns";
-
-const APPLICATION_API =
-  "http://localhost:5000/api/applications";
+const CAMPAIGN_API = "http://localhost:5000/api/campaigns";
+const APPLICATION_API = "http://localhost:5000/api/applications";
 
 export default function CampaignDetails() {
   const { id } = useParams();
@@ -30,12 +33,8 @@ export default function CampaignDetails() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
 
-  const [showApplyForm, setShowApplyForm] =
-    useState(false);
-
-  const [submitting, setSubmitting] =
-    useState(false);
-
+  const [showApplyForm, setShowApplyForm] = useState(false);
+  const [submitting, setSubmitting] = useState(false);
   const [success, setSuccess] = useState("");
 
   const [formData, setFormData] = useState({
@@ -45,6 +44,8 @@ export default function CampaignDetails() {
   });
 
   const user = authService.getCurrentUser();
+  const creatorCurrency = getCurrencyFromCountry(user?.country);
+  const [convertedBudget, setConvertedBudget] = useState(null);
 
   // Fetch campaign
   useEffect(() => {
@@ -53,20 +54,12 @@ export default function CampaignDetails() {
         setLoading(true);
         setError("");
 
-        const response = await axios.get(
-          `${CAMPAIGN_API}/${id}`
-        );
-
+        const response = await axios.get(`${CAMPAIGN_API}/${id}`);
         setCampaign(response.data.campaign);
       } catch (err) {
-        console.error(
-          "Campaign details error:",
-          err
-        );
-
+        console.error("Campaign details error:", err);
         setError(
-          err.response?.data?.message ||
-            "Failed to load campaign."
+          err.response?.data?.message || "Failed to load campaign."
         );
       } finally {
         setLoading(false);
@@ -76,9 +69,35 @@ export default function CampaignDetails() {
     fetchCampaign();
   }, [id]);
 
+  // Convert campaign budget to creator's currency
+  useEffect(() => {
+    const convertBudget = async () => {
+      if (!campaign?.budget) return;
+
+      const sourceCurrency = campaign.currency || "INR";
+
+      if (sourceCurrency === creatorCurrency.code) {
+        setConvertedBudget(campaign.budget);
+        return;
+      }
+
+      try {
+        const result = await convertCurrency(
+          campaign.budget,
+          sourceCurrency,
+          creatorCurrency.code
+        );
+        setConvertedBudget(result);
+      } catch {
+        setConvertedBudget(campaign.budget);
+      }
+    };
+
+    convertBudget();
+  }, [campaign, creatorCurrency.code]);
+
   const handleChange = (e) => {
     const { name, value } = e.target;
-
     setFormData((previous) => ({
       ...previous,
       [name]: value,
@@ -97,40 +116,28 @@ export default function CampaignDetails() {
     }
 
     if (user.role !== "creator") {
-      setError(
-        "Only creators can apply for campaigns."
-      );
+      setError("Only creators can apply for campaigns.");
       return;
     }
 
     if (!formData.message.trim()) {
-      setError(
-        "Please write a message to the brand."
-      );
+      setError("Please write a message to the brand.");
       return;
     }
 
     setSubmitting(true);
 
     try {
-      const response = await axios.post(
-        APPLICATION_API,
-        {
-          campaignId: campaign._id,
-          creatorId: user.id,
-
-          message: formData.message,
-
-          portfolioLink:
-            formData.portfolioLink,
-
-          proposedRate:
-            Number(formData.proposedRate) || 0,
-        }
-      );
+      const response = await axios.post(APPLICATION_API, {
+        campaignId: campaign._id,
+        creatorId: user.id,
+        message: formData.message,
+        portfolioLink: formData.portfolioLink,
+        proposedRate: Number(formData.proposedRate) || 0,
+        proposedRateCurrency: creatorCurrency.code,
+      });
 
       setSuccess(response.data.message);
-
       setFormData({
         message: "",
         portfolioLink: "",
@@ -139,14 +146,9 @@ export default function CampaignDetails() {
 
       setShowApplyForm(false);
     } catch (err) {
-      console.error(
-        "Application error:",
-        err
-      );
-
+      console.error("Application error:", err);
       setError(
-        err.response?.data?.message ||
-          "Failed to submit application."
+        err.response?.data?.message || "Failed to submit application."
       );
     } finally {
       setSubmitting(false);
@@ -156,44 +158,33 @@ export default function CampaignDetails() {
   const formatDate = (date) => {
     if (!date) return "Not specified";
 
-    return new Date(date).toLocaleDateString(
-      "en-IN",
-      {
-        day: "numeric",
-        month: "long",
-        year: "numeric",
-      }
-    );
+    return new Date(date).toLocaleDateString("en-IN", {
+      day: "numeric",
+      month: "long",
+      year: "numeric",
+    });
   };
 
-  const formatBudget = (budget) => {
-    if (!budget) return "Not specified";
-
-    return `₹${Number(budget).toLocaleString(
-      "en-IN"
-    )}`;
+  const formatBudget = () => {
+    if (!campaign?.budget) return "Not specified";
+    if (convertedBudget === null) return "Calculating...";
+    return formatCurrency(convertedBudget, creatorCurrency.code);
   };
 
   const getDaysLeft = (deadline) => {
     if (!deadline) return null;
 
-    const difference =
-      new Date(deadline) - new Date();
-
-    return Math.ceil(
-      difference / (1000 * 60 * 60 * 24)
-    );
+    const difference = new Date(deadline) - new Date();
+    return Math.ceil(difference / (1000 * 60 * 60 * 24));
   };
 
-  // Loading
   if (loading) {
     return (
-      <div className="flex min-h-screen items-center justify-center bg-slate-950 text-white">
+      <div className="flex min-h-screen items-center justify-center bg-[#FAF9F6] text-[#2B241F] font-sans">
         <div className="text-center">
-          <div className="mx-auto mb-4 h-10 w-10 animate-spin rounded-full border-2 border-slate-700 border-t-violet-500" />
-
-          <p className="text-slate-400">
-            Loading campaign...
+          <div className="mx-auto mb-3 h-8 w-8 animate-spin rounded-full border-2 border-[#D7C9B8] border-t-[#8B6F5A]" />
+          <p className="text-xs font-semibold text-[#4A3A2E]/70">
+            Loading campaign details...
           </p>
         </div>
       </div>
@@ -203,24 +194,18 @@ export default function CampaignDetails() {
   // Error
   if (error && !campaign) {
     return (
-      <div className="min-h-screen bg-slate-950 px-6 py-12 text-white">
-        <div className="mx-auto max-w-3xl text-center">
-          <div className="rounded-2xl border border-red-500/20 bg-red-500/10 p-8">
-            <p className="mb-5 text-red-300">
-              {error}
-            </p>
-
-            <button
-              onClick={() =>
-                navigate(
-                  "/creator/discover-campaigns"
-                )
-              }
-              className="rounded-xl bg-violet-600 px-5 py-3 font-semibold hover:bg-violet-500"
-            >
-              Back to Campaigns
-            </button>
+      <div className="min-h-screen bg-[#FAF9F6] px-6 py-12 text-[#2B241F] font-sans flex items-center justify-center">
+        <div className="mx-auto max-w-md text-center bg-[#FAF9F6] p-8 rounded-2xl border border-[#D7C9B8] shadow-lg w-full">
+          <div className="w-12 h-12 rounded-xl bg-red-50 text-red-600 flex items-center justify-center mx-auto mb-3 border border-red-200">
+            <X size={24} />
           </div>
+          <p className="mb-4 text-xs font-bold text-red-700">{error}</p>
+          <button
+            onClick={() => navigate("/creator/discover-campaigns")}
+            className="w-full rounded-xl bg-[#8B6F5A] px-5 py-2.5 font-bold text-white text-xs hover:bg-[#785D4A] shadow-xs"
+          >
+            Back to Campaigns
+          </button>
         </div>
       </div>
     );
@@ -230,376 +215,318 @@ export default function CampaignDetails() {
     return null;
   }
 
-  const daysLeft = getDaysLeft(
-    campaign.applicationDeadline
-  );
-
-  const deadlinePassed =
-    daysLeft !== null && daysLeft <= 0;
+  const daysLeft = getDaysLeft(campaign.applicationDeadline);
+  const deadlinePassed = daysLeft !== null && daysLeft <= 0;
 
   return (
-    <div className="min-h-screen bg-slate-950 text-white">
+    <div className="min-h-screen bg-[#FAF9F6] text-[#2B241F] font-sans">
       {/* Top bar */}
-      <div className="border-b border-slate-800 bg-slate-950/90">
-        <div className="mx-auto max-w-6xl px-6 py-5">
+      <div className="border-b border-[#D7C9B8] bg-[#FAF9F6]/90 backdrop-blur-md sticky top-0 z-30">
+        <div className="mx-auto max-w-6xl px-6 py-4">
           <button
-            onClick={() =>
-              navigate(
-                "/creator/discover-campaigns"
-              )
-            }
-            className="flex items-center gap-2 text-sm text-slate-400 transition hover:text-white"
+            onClick={() => navigate("/creator/discover-campaigns")}
+            className="flex items-center gap-2 text-xs font-bold text-[#4A3A2E] transition hover:text-[#8B6F5A]"
           >
-            <ArrowLeft size={17} />
+            <ArrowLeft size={16} />
             Back to Discover Campaigns
           </button>
         </div>
       </div>
 
-      <main className="mx-auto max-w-6xl px-6 py-8">
-        {/* Success */}
+      <main className="mx-auto max-w-6xl px-6 py-8 space-y-6">
+        {/* Success Alert */}
         {success && (
-          <div className="mb-6 flex items-center gap-3 rounded-xl border border-emerald-500/20 bg-emerald-500/10 p-4 text-emerald-300">
-            <CheckCircle size={20} />
-
+          <div className="flex items-center gap-3 rounded-2xl border border-emerald-300 bg-emerald-50 p-4 text-xs font-bold text-emerald-900">
+            <CheckCircle size={18} className="shrink-0 text-emerald-700" />
             <span>{success}</span>
           </div>
         )}
 
-        {/* Error */}
+        {/* Error Alert */}
         {error && campaign && (
-          <div className="mb-6 flex items-center gap-3 rounded-xl border border-red-500/20 bg-red-500/10 p-4 text-red-300">
-            <X size={20} />
-
+          <div className="flex items-center gap-3 rounded-2xl border border-red-200 bg-red-50 p-4 text-xs font-bold text-red-700">
+            <X size={18} className="shrink-0 text-red-600" />
             <span>{error}</span>
           </div>
         )}
 
-        {/* Campaign Header */}
-        <div className="overflow-hidden rounded-3xl border border-slate-800 bg-slate-900">
-          <div className="bg-gradient-to-br from-violet-500/15 via-slate-900 to-cyan-500/10 p-8 md:p-10">
+        {/* Campaign Header Card */}
+        <div className="overflow-hidden rounded-2xl border border-[#D7C9B8] bg-[#FAF9F6] shadow-xs">
+          <div className="bg-[#EDE7DC]/40 p-6 md:p-8 border-b border-[#D7C9B8]/70">
             <div className="flex flex-col gap-6 md:flex-row md:items-start md:justify-between">
-              <div className="flex gap-5">
+              <div className="flex gap-4">
                 {/* Brand logo */}
-                <div className="flex h-16 w-16 shrink-0 items-center justify-center rounded-2xl bg-violet-500/10 text-2xl font-bold text-violet-300">
-                  {(campaign.brandName || "B")
-                    .charAt(0)
-                    .toUpperCase()}
+                <div className="flex h-14 w-14 shrink-0 items-center justify-center rounded-xl bg-[#8B6F5A] text-lg font-black text-white shadow-xs">
+                  {(campaign.brandName || "B").charAt(0).toUpperCase()}
                 </div>
 
                 <div>
-                  <p className="mb-2 text-sm font-medium text-cyan-400">
-                    {campaign.brandName ||
-                      "Brand"}
+                  <p className="text-xs font-bold text-[#8B6F5A]">
+                    {campaign.brandName || "Brand"}
                   </p>
 
-                  <h1 className="text-3xl font-bold md:text-4xl">
+                  <h1 className="text-2xl md:text-3xl font-extrabold text-[#2B241F] tracking-tight mt-0.5">
                     {campaign.title}
                   </h1>
 
-                  <div className="mt-4 flex flex-wrap gap-2">
-                    <span className="rounded-full bg-violet-500/10 px-3 py-1.5 text-xs font-medium text-violet-300">
+                  <div className="mt-3 flex flex-wrap gap-2">
+                    <span className="rounded-full bg-[#EDE7DC] text-[#8B6F5A] border border-[#D7C9B8] px-3 py-0.5 text-xs font-bold">
                       {campaign.category}
                     </span>
 
-                    <span className="rounded-full bg-cyan-500/10 px-3 py-1.5 text-xs font-medium text-cyan-300">
+                    <span className="rounded-full bg-[#EDE7DC] text-[#A78B7F] border border-[#D7C9B8] px-3 py-0.5 text-xs font-bold">
                       {campaign.campaignType}
                     </span>
                   </div>
                 </div>
               </div>
 
-              {/* Budget */}
-              <div className="rounded-2xl border border-emerald-500/20 bg-emerald-500/10 px-6 py-4 md:min-w-[180px]">
-                <p className="text-xs text-emerald-300">
+              {/* Budget Badge */}
+              <div className="rounded-xl border border-[#D7C9B8] bg-[#FAF9F6] px-5 py-3 md:min-w-[170px] text-left md:text-right shadow-2xs">
+                <p className="text-[10px] uppercase font-bold text-[#8B6F5A] tracking-wider">
                   Campaign Budget
                 </p>
-
-                <p className="mt-1 text-2xl font-bold text-white">
-                  {formatBudget(
-                    campaign.budget
-                  )}
+                <p className="mt-0.5 text-xl font-black text-[#2B241F]">
+                  {formatBudget()}
+                </p>
+                <p className="text-[10px] text-[#4A3A2E]/50 mt-0.5">
+                  in {creatorCurrency.code}
                 </p>
               </div>
             </div>
           </div>
 
-          {/* Quick info */}
-          <div className="grid border-t border-slate-800 sm:grid-cols-2 lg:grid-cols-4">
+          {/* Quick info row */}
+          <div className="grid sm:grid-cols-2 lg:grid-cols-4 bg-[#EDE7DC]/20 divide-y sm:divide-y-0 sm:divide-x divide-[#D7C9B8]/70">
             <QuickInfo
-              icon={<Users size={19} />}
+              icon={<Users size={17} />}
               label="Creators Needed"
               value={campaign.creatorsNeeded}
             />
 
             <QuickInfo
-              icon={<MapPin size={19} />}
+              icon={<MapPin size={17} />}
               label="Location"
-              value={
-                campaign.location || "India"
-              }
+              value={campaign.location || "India"}
             />
 
             <QuickInfo
-              icon={<Calendar size={19} />}
+              icon={<Calendar size={17} />}
               label="Start Date"
-              value={formatDate(
-                campaign.startDate
-              )}
+              value={formatDate(campaign.startDate)}
             />
 
             <QuickInfo
-              icon={<Clock size={19} />}
+              icon={<Clock size={17} />}
               label="Application Deadline"
-              value={formatDate(
-                campaign.applicationDeadline
-              )}
+              value={formatDate(campaign.applicationDeadline)}
             />
           </div>
         </div>
 
-        {/* Content */}
-        <div className="mt-6 grid gap-6 lg:grid-cols-3">
-          {/* Left */}
+        {/* Two Column Content */}
+        <div className="grid gap-6 lg:grid-cols-3">
+          {/* Left Column Details */}
           <div className="space-y-6 lg:col-span-2">
             {/* About */}
-            <section className="rounded-2xl border border-slate-800 bg-slate-900 p-6">
-              <h2 className="mb-4 text-xl font-semibold">
+            <section className="rounded-2xl border border-[#D7C9B8] bg-[#FAF9F6] p-6 shadow-xs">
+              <h2 className="text-sm font-extrabold text-[#2B241F] mb-3 uppercase tracking-wider">
                 About this Campaign
               </h2>
-
-              <p className="whitespace-pre-line leading-7 text-slate-300">
+              <p className="whitespace-pre-line text-xs leading-relaxed text-[#4A3A2E]">
                 {campaign.description}
               </p>
             </section>
 
             {/* Deliverables */}
-            <section className="rounded-2xl border border-slate-800 bg-slate-900 p-6">
-              <h2 className="mb-4 text-xl font-semibold">
+            <section className="rounded-2xl border border-[#D7C9B8] bg-[#FAF9F6] p-6 shadow-xs">
+              <h2 className="text-sm font-extrabold text-[#2B241F] mb-3 uppercase tracking-wider">
                 Deliverables
               </h2>
-
-              <p className="whitespace-pre-line leading-7 text-slate-300">
+              <p className="whitespace-pre-line text-xs leading-relaxed text-[#4A3A2E] bg-[#EDE7DC]/30 p-4 rounded-xl border border-[#D7C9B8]">
                 {campaign.deliverables}
               </p>
             </section>
 
             {/* Requirements */}
-            <section className="rounded-2xl border border-slate-800 bg-slate-900 p-6">
-              <h2 className="mb-4 text-xl font-semibold">
+            <section className="rounded-2xl border border-[#D7C9B8] bg-[#FAF9F6] p-6 shadow-xs">
+              <h2 className="text-sm font-extrabold text-[#2B241F] mb-3 uppercase tracking-wider">
                 Creator Requirements
               </h2>
-
-              <p className="whitespace-pre-line leading-7 text-slate-300">
+              <p className="whitespace-pre-line text-xs leading-relaxed text-[#4A3A2E] bg-[#EDE7DC]/30 p-4 rounded-xl border border-[#D7C9B8]">
                 {campaign.requirements}
               </p>
             </section>
 
             {/* Platforms */}
-            <section className="rounded-2xl border border-slate-800 bg-slate-900 p-6">
-              <h2 className="mb-4 text-xl font-semibold">
+            <section className="rounded-2xl border border-[#D7C9B8] bg-[#FAF9F6] p-6 shadow-xs">
+              <h2 className="text-sm font-extrabold text-[#2B241F] mb-3 uppercase tracking-wider">
                 Required Platforms
               </h2>
-
-              <div className="flex flex-wrap gap-3">
-                {(campaign.platforms || []).map(
-                  (item) => (
-                    <span
-                      key={item}
-                      className="rounded-xl border border-slate-700 bg-slate-950 px-4 py-2 text-sm text-slate-300"
-                    >
-                      {item}
-                    </span>
-                  )
-                )}
+              <div className="flex flex-wrap gap-2">
+                {(campaign.platforms || []).map((item) => (
+                  <span
+                    key={item}
+                    className="rounded-xl border border-[#D7C9B8] bg-[#EDE7DC]/30 px-3 py-1.5 text-xs font-bold text-[#2B241F]"
+                  >
+                    {item}
+                  </span>
+                ))}
               </div>
             </section>
           </div>
 
-          {/* Right */}
+          {/* Right Column Action Sidebar */}
           <div className="lg:col-span-1">
-            <div className="sticky top-6 rounded-2xl border border-slate-800 bg-slate-900 p-6">
-              {/* Deadline */}
-              <div className="mb-6 rounded-xl border border-orange-500/20 bg-orange-500/10 p-4">
-                <div className="flex items-center gap-2 text-orange-300">
-                  <Clock size={18} />
-
-                  <span className="text-sm font-medium">
+            <div className="sticky top-24 rounded-2xl border border-[#D7C9B8] bg-[#FAF9F6] p-6 shadow-xs space-y-5">
+              {/* Deadline Callout */}
+              <div className="rounded-xl border border-amber-200 bg-amber-50 p-4">
+                <div className="flex items-center gap-2 text-amber-800">
+                  <Clock size={16} />
+                  <span className="text-xs font-bold uppercase tracking-wider">
                     Application Deadline
                   </span>
                 </div>
 
-                <p className="mt-2 font-semibold text-white">
-                  {formatDate(
-                    campaign.applicationDeadline
-                  )}
+                <p className="mt-1.5 text-xs font-extrabold text-[#2B241F]">
+                  {formatDate(campaign.applicationDeadline)}
                 </p>
 
-                {!deadlinePassed &&
-                  daysLeft !== null && (
-                    <p className="mt-1 text-xs text-orange-300">
-                      {daysLeft} day
-                      {daysLeft !== 1
-                        ? "s"
-                        : ""}{" "}
-                      remaining
-                    </p>
-                  )}
+                {!deadlinePassed && daysLeft !== null && (
+                  <p className="mt-0.5 text-[11px] font-bold text-amber-700">
+                    {daysLeft} day{daysLeft !== 1 ? "s" : ""} remaining
+                  </p>
+                )}
               </div>
 
-              {/* Campaign info */}
-              <div className="mb-6 space-y-4">
+              {/* Campaign Breakdown Info */}
+              <div className="space-y-3 pt-1">
                 <SidebarItem
-                  label="Budget"
-                  value={formatBudget(
-                    campaign.budget
-                  )}
+                  label={`Budget (${creatorCurrency.code})`}
+                  value={formatBudget()}
                 />
-
                 <SidebarItem
                   label="Creators Needed"
-                  value={
-                    campaign.creatorsNeeded
-                  }
+                  value={campaign.creatorsNeeded}
                 />
-
                 <SidebarItem
                   label="Campaign Period"
-                  value={`${formatDate(
-                    campaign.startDate
-                  )} - ${formatDate(
+                  value={`${formatDate(campaign.startDate)} - ${formatDate(
                     campaign.endDate
                   )}`}
                 />
               </div>
 
-              {/* Apply button */}
+              {/* Apply Action Button / Form */}
               {!showApplyForm ? (
                 <button
                   disabled={
-                    deadlinePassed ||
-                    campaign.status !==
-                      "published"
+                    deadlinePassed || campaign.status !== "published"
                   }
                   onClick={() => {
                     setError("");
-
                     if (!user) {
                       navigate("/login");
                       return;
                     }
-
                     if (user.role !== "creator") {
-                      setError(
-                        "Only creators can apply for campaigns."
-                      );
+                      setError("Only creators can apply for campaigns.");
                       return;
                     }
-
                     setShowApplyForm(true);
                   }}
-                  className="flex w-full items-center justify-center gap-2 rounded-xl bg-gradient-to-r from-violet-600 to-violet-500 px-5 py-3.5 font-semibold transition hover:from-violet-500 hover:to-violet-400 disabled:cursor-not-allowed disabled:opacity-50"
+                  className="flex w-full items-center justify-center gap-2 rounded-xl bg-[#8B6F5A] hover:bg-[#785D4A] px-5 py-3 font-bold text-white text-xs transition shadow-xs disabled:opacity-50"
                 >
-                  <Send size={18} />
-                  {deadlinePassed
-                    ? "Applications Closed"
-                    : "Apply Now"}
+                  <Send size={15} />
+                  {deadlinePassed ? "Applications Closed" : "Apply Now"}
                 </button>
               ) : (
-                <form
-                  onSubmit={handleApply}
-                  className="space-y-4"
-                >
+                <form onSubmit={handleApply} className="space-y-3.5 pt-2">
                   <div className="flex items-center justify-between">
-                    <h3 className="font-semibold">
+                    <h3 className="text-xs font-bold text-[#2B241F] uppercase tracking-wider">
                       Apply for Campaign
                     </h3>
 
                     <button
                       type="button"
-                      onClick={() =>
-                        setShowApplyForm(false)
-                      }
-                      className="rounded-lg p-1.5 text-slate-400 hover:bg-slate-800 hover:text-white"
+                      onClick={() => setShowApplyForm(false)}
+                      className="p-1 rounded-lg text-[#4A3A2E]/70 hover:bg-[#EDE7DC] hover:text-[#2B241F]"
                     >
-                      <X size={18} />
+                      <X size={15} />
                     </button>
                   </div>
 
                   {/* Message */}
                   <div>
-                    <label className="mb-2 block text-sm text-slate-300">
+                    <label className="mb-1 block text-xs font-bold text-[#2B241F]">
                       Message to Brand *
                     </label>
-
                     <textarea
                       name="message"
                       value={formData.message}
                       onChange={handleChange}
-                      rows={5}
-                      placeholder="Tell the brand why you are a good fit for this campaign..."
-                      className="w-full resize-none rounded-xl border border-slate-700 bg-slate-950 px-4 py-3 text-sm text-white outline-none placeholder:text-slate-500 focus:border-violet-500"
+                      rows={4}
+                      placeholder="Explain why your audience matches this brand campaign..."
+                      className="w-full resize-none rounded-xl border border-[#D7C9B8] bg-[#EDE7DC]/30 p-3 text-xs text-[#2B241F] outline-none focus:border-[#8B6F5A] focus:bg-[#FAF9F6]"
                     />
                   </div>
 
-                  {/* Portfolio */}
+                  {/* Portfolio Link */}
                   <div>
-                    <label className="mb-2 block text-sm text-slate-300">
+                    <label className="mb-1 block text-xs font-bold text-[#2B241F]">
                       Portfolio Link
                     </label>
-
                     <input
                       type="url"
                       name="portfolioLink"
-                      value={
-                        formData.portfolioLink
-                      }
+                      value={formData.portfolioLink}
                       onChange={handleChange}
                       placeholder="https://yourportfolio.com"
-                      className="w-full rounded-xl border border-slate-700 bg-slate-950 px-4 py-3 text-sm text-white outline-none placeholder:text-slate-500 focus:border-violet-500"
+                      className="w-full rounded-xl border border-[#D7C9B8] bg-[#EDE7DC]/30 px-3.5 py-2 text-xs text-[#2B241F] outline-none focus:border-[#8B6F5A] focus:bg-[#FAF9F6]"
                     />
                   </div>
 
-                  {/* Rate */}
+                  {/* Proposed Rate */}
                   <div>
-                    <label className="mb-2 block text-sm text-slate-300">
-                      Proposed Rate
+                    <label className="mb-1 block text-xs font-bold text-[#2B241F]">
+                      Proposed Rate{" "}
+                      <span className="ml-1 px-1.5 py-0.5 rounded-md bg-[#EDE7DC] text-[#8B6F5A] font-bold text-[10px] border border-[#D7C9B8]">
+                        {creatorCurrency.code}
+                      </span>
                     </label>
-
                     <div className="relative">
-                      <IndianRupee
-                        size={16}
-                        className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-500"
-                      />
-
+                      <span className="absolute left-3.5 top-1/2 -translate-y-1/2 text-[#4A3A2E]/50 text-xs font-bold select-none">
+                        {getCurrencySymbol(creatorCurrency.code)}
+                      </span>
                       <input
                         type="number"
                         name="proposedRate"
-                        value={
-                          formData.proposedRate
-                        }
+                        value={formData.proposedRate}
                         onChange={handleChange}
                         min="0"
-                        placeholder="Enter your expected rate"
-                        className="w-full rounded-xl border border-slate-700 bg-slate-950 py-3 pl-10 pr-4 text-sm text-white outline-none placeholder:text-slate-500 focus:border-violet-500"
+                        placeholder="Expected fee"
+                        className="w-full rounded-xl border border-[#D7C9B8] bg-[#EDE7DC]/30 py-2 pl-9 pr-3.5 text-xs text-[#2B241F] outline-none focus:border-[#8B6F5A] focus:bg-[#FAF9F6]"
                       />
                     </div>
+                    <p className="mt-1 text-[10px] text-[#4A3A2E]/60">
+                      Enter in {creatorCurrency.code} — brand will see it in their currency.
+                    </p>
                   </div>
 
-                  {/* Submit */}
+                  {/* Submit Button */}
                   <button
                     type="submit"
                     disabled={submitting}
-                    className="flex w-full items-center justify-center gap-2 rounded-xl bg-violet-600 px-5 py-3 font-semibold transition hover:bg-violet-500 disabled:cursor-not-allowed disabled:opacity-50"
+                    className="flex w-full items-center justify-center gap-2 rounded-xl bg-[#8B6F5A] hover:bg-[#785D4A] px-5 py-2.5 font-bold text-white text-xs transition shadow-xs disabled:opacity-50"
                   >
                     {submitting ? (
                       <>
-                        <div className="h-4 w-4 animate-spin rounded-full border-2 border-white/30 border-t-white" />
+                        <div className="h-3.5 w-3.5 animate-spin rounded-full border-2 border-white/30 border-t-white" />
                         Submitting...
                       </>
                     ) : (
                       <>
-                        <Send size={17} />
+                        <Send size={14} />
                         Submit Application
                       </>
                     )}
@@ -607,9 +534,8 @@ export default function CampaignDetails() {
                 </form>
               )}
 
-              <p className="mt-4 text-center text-xs leading-5 text-slate-500">
-                Your application will be reviewed by
-                the brand.
+              <p className="text-center text-[11px] text-[#4A3A2E]/60">
+                Your application will be sent directly to the brand's review dashboard.
               </p>
             </div>
           </div>
@@ -621,32 +547,25 @@ export default function CampaignDetails() {
 
 function QuickInfo({ icon, label, value }) {
   return (
-    <div className="border-b border-slate-800 p-5 sm:border-r lg:border-b-0">
-      <div className="mb-2 flex items-center gap-2 text-violet-400">
+    <div className="p-4 flex items-center gap-3">
+      <div className="p-2 rounded-xl bg-[#EDE7DC] text-[#8B6F5A] border border-[#D7C9B8] shrink-0">
         {icon}
-
-        <span className="text-xs text-slate-500">
-          {label}
-        </span>
       </div>
-
-      <p className="text-sm font-semibold text-white">
-        {value}
-      </p>
+      <div>
+        <p className="text-[10px] uppercase font-bold text-[#4A3A2E]/60 tracking-wider">
+          {label}
+        </p>
+        <p className="text-xs font-extrabold text-[#2B241F] mt-0.5">{value}</p>
+      </div>
     </div>
   );
 }
 
 function SidebarItem({ label, value }) {
   return (
-    <div className="flex items-start justify-between gap-4 border-b border-slate-800 pb-4 last:border-0 last:pb-0">
-      <span className="text-sm text-slate-500">
-        {label}
-      </span>
-
-      <span className="text-right text-sm font-medium text-white">
-        {value}
-      </span>
+    <div className="flex items-start justify-between gap-3 border-b border-[#D7C9B8]/70 pb-2.5 last:border-0 last:pb-0 text-xs">
+      <span className="text-[#4A3A2E]/60 font-medium">{label}</span>
+      <span className="text-right font-bold text-[#2B241F]">{value}</span>
     </div>
   );
 }

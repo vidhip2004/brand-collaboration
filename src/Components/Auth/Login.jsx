@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { useNavigate, Link } from "react-router-dom";
 import authService from "../../services/authService";
-import { Sparkles, ArrowRight, Lock, Mail, Building2, Palette } from "lucide-react";
+import { Sparkles, ArrowRight, Lock, Mail, Building2, Palette, AlertCircle } from "lucide-react";
 
 const Login = () => {
   const navigate = useNavigate();
@@ -59,7 +59,7 @@ const Login = () => {
       } else if (err.message) {
         setError(err.message);
       } else {
-        setError("Login failed. Please try again.");
+        setError("Login failed. Please check your credentials.");
       }
     } finally {
       setLoading(false);
@@ -67,26 +67,26 @@ const Login = () => {
   };
 
   return (
-    <div className="min-h-screen bg-[#050714] relative overflow-hidden flex items-center justify-center px-4 py-12">
-      {/* Background Radial Glows */}
-      <div className="absolute w-[500px] h-[500px] bg-violet-600/20 rounded-full blur-[160px] top-0 left-1/4 pointer-events-none animate-pulse-glow" />
-      <div className="absolute w-[400px] h-[400px] bg-cyan-500/15 rounded-full blur-[140px] bottom-0 right-1/4 pointer-events-none" />
+    <div className="min-h-screen bg-[#FAF9F6] relative overflow-hidden flex items-center justify-center px-4 py-12">
+      {/* Background Radial Glows for Warm Theme */}
+      <div className="absolute w-[500px] h-[500px] bg-[#EDE7DC]/60 rounded-full blur-[140px] top-0 left-1/4 pointer-events-none" />
+      <div className="absolute w-[400px] h-[400px] bg-[#D7C9B8]/30 rounded-full blur-[140px] bottom-0 right-1/4 pointer-events-none" />
 
       <div className="w-full max-w-4xl relative z-10">
         {/* Logo / Header */}
-        <div className="text-center mb-10">
+        <div className="text-center mb-8">
           <Link to="/" className="inline-flex items-center gap-2.5 mb-4 group">
-            <div className="w-11 h-11 rounded-2xl bg-gradient-to-br from-violet-600 to-cyan-500 flex items-center justify-center shadow-lg shadow-violet-600/30 group-hover:scale-105 transition-transform">
-              <Sparkles size={22} className="text-white" />
+            <div className="w-11 h-11 rounded-2xl bg-[#8B6F5A] flex items-center justify-center shadow-xs group-hover:bg-[#785D4A] transition-all">
+              <Sparkles size={22} className="text-[#FAF9F6]" />
             </div>
-            <span className="text-3xl font-extrabold text-white tracking-tight">
-              Brand<span className="gradient-text">Verse</span>
+            <span className="text-3xl font-black text-[#2B241F] tracking-tight">
+              Brand<span className="text-[#8B6F5A]">Verse</span>
             </span>
           </Link>
-          <h1 className="text-4xl font-extrabold text-white tracking-tight mt-2">
-            Welcome Back
+          <h1 className="text-3xl sm:text-4xl font-black text-[#2B241F] tracking-tight mt-2">
+            Welcome Back 👋
           </h1>
-          <p className="text-slate-400 mt-2 text-base">
+          <p className="text-[#4A3A2E]/70 mt-2 text-base font-medium">
             Select your account type to access your personalized workspace
           </p>
         </div>
@@ -100,32 +100,32 @@ const Login = () => {
               setRole("creator");
               setError("");
             }}
-            className={`text-left p-6 rounded-2xl border transition-all duration-300 backdrop-blur-xl relative overflow-hidden ${
+            className={`text-left p-6 rounded-2xl border transition-all duration-300 relative overflow-hidden cursor-pointer ${
               role === "creator"
-                ? "border-cyan-500/60 bg-cyan-500/10 shadow-xl shadow-cyan-500/10"
-                : "border-white/10 bg-slate-900/60 hover:border-cyan-500/40 hover:bg-slate-900/80"
+                ? "border-[#8B6F5A] bg-[#EDE7DC]/40 shadow-xs ring-1 ring-[#8B6F5A]/30"
+                : "border-[#D7C9B8]/70 bg-[#FAF9F6] hover:border-[#8B6F5A]/50 hover:bg-[#EDE7DC]/20 shadow-2xs"
             }`}
           >
             <div className="flex items-center gap-4">
               <div
-                className={`w-14 h-14 rounded-2xl flex items-center justify-center text-white transition-all shadow-md ${
+                className={`w-14 h-14 rounded-xl flex items-center justify-center transition-all ${
                   role === "creator"
-                    ? "bg-gradient-to-br from-cyan-500 to-blue-600 shadow-cyan-500/30"
-                    : "bg-slate-800 text-slate-400"
+                    ? "bg-[#8B6F5A] text-[#FAF9F6]"
+                    : "bg-[#EDE7DC] text-[#4A3A2E]"
                 }`}
               >
                 <Palette size={26} />
               </div>
               <div>
-                <h2 className="text-xl font-bold text-white flex items-center gap-2">
+                <h2 className="text-xl font-bold text-[#2B241F] flex items-center gap-2">
                   Creator Login
                   {role === "creator" && (
-                    <span className="text-xs bg-cyan-500/20 text-cyan-300 border border-cyan-500/30 px-2 py-0.5 rounded-full font-semibold">
+                    <span className="text-xs bg-[#EDE7DC] text-[#8B6F5A] border border-[#D7C9B8] px-2.5 py-0.5 rounded-full font-bold">
                       Selected
                     </span>
                   )}
                 </h2>
-                <p className="text-slate-400 text-sm mt-1">
+                <p className="text-[#4A3A2E]/70 text-sm mt-1 font-normal">
                   Access campaigns, submit content & track earnings
                 </p>
               </div>
@@ -139,33 +139,33 @@ const Login = () => {
               setRole("brand");
               setError("");
             }}
-            className={`text-left p-6 rounded-2xl border transition-all duration-300 backdrop-blur-xl relative overflow-hidden ${
+            className={`text-left p-6 rounded-2xl border transition-all duration-300 relative overflow-hidden cursor-pointer ${
               role === "brand"
-                ? "border-violet-500/60 bg-violet-500/10 shadow-xl shadow-violet-500/10"
-                : "border-white/10 bg-slate-900/60 hover:border-violet-500/40 hover:bg-slate-900/80"
+                ? "border-[#8B6F5A] bg-[#EDE7DC]/40 shadow-xs ring-1 ring-[#8B6F5A]/30"
+                : "border-[#D7C9B8]/70 bg-[#FAF9F6] hover:border-[#8B6F5A]/50 hover:bg-[#EDE7DC]/20 shadow-2xs"
             }`}
           >
             <div className="flex items-center gap-4">
               <div
-                className={`w-14 h-14 rounded-2xl flex items-center justify-center text-white transition-all shadow-md ${
+                className={`w-14 h-14 rounded-xl flex items-center justify-center transition-all ${
                   role === "brand"
-                    ? "bg-gradient-to-br from-violet-600 to-indigo-600 shadow-violet-500/30"
-                    : "bg-slate-800 text-slate-400"
+                    ? "bg-[#8B6F5A] text-[#FAF9F6]"
+                    : "bg-[#EDE7DC] text-[#4A3A2E]"
                 }`}
               >
                 <Building2 size={26} />
               </div>
               <div>
-                <h2 className="text-xl font-bold text-white flex items-center gap-2">
+                <h2 className="text-xl font-bold text-[#2B241F] flex items-center gap-2">
                   Brand Login
                   {role === "brand" && (
-                    <span className="text-xs bg-violet-500/20 text-violet-300 border border-violet-500/30 px-2 py-0.5 rounded-full font-semibold">
+                    <span className="text-xs bg-[#EDE7DC] text-[#8B6F5A] border border-[#D7C9B8] px-2.5 py-0.5 rounded-full font-bold">
                       Selected
                     </span>
                   )}
                 </h2>
-                <p className="text-slate-400 text-sm mt-1">
-                  Manage campaigns, discover talent & review applications
+                <p className="text-[#4A3A2E]/70 text-sm mt-1 font-normal">
+                  Manage campaigns, discover talent & pay creators
                 </p>
               </div>
             </div>
@@ -174,43 +174,39 @@ const Login = () => {
 
         {/* Login Form Container */}
         <div className="max-w-md mx-auto">
-          <div className="glass-card rounded-3xl p-8 border border-white/10 shadow-2xl backdrop-blur-2xl">
+          <div className="bg-[#FAF9F6] rounded-3xl p-8 sm:p-9 border border-[#D7C9B8] shadow-xs">
             <div className="text-center mb-6">
-              <h2
-                className={`text-2xl font-bold ${
-                  role === "creator" ? "gradient-text-cyan" : "gradient-text-purple"
-                }`}
-              >
+              <h2 className="text-2xl font-black text-[#8B6F5A]">
                 {role === "creator" ? "Content Creator Portal" : "Brand Management Portal"}
               </h2>
-              <p className="text-slate-400 text-sm mt-1">
+              <p className="text-[#4A3A2E]/70 text-sm mt-1 font-medium">
                 Enter your credentials to proceed
               </p>
             </div>
 
             {/* Error Banner */}
             {error && (
-              <div className="bg-rose-500/15 border border-rose-500/40 text-rose-200 p-4 rounded-2xl text-sm mb-6 shadow-inner flex items-center gap-3">
-                <span className="w-2 h-2 rounded-full bg-rose-400 shrink-0 animate-ping" />
-                {error}
+              <div className="bg-rose-50 border border-rose-300 text-rose-700 p-4 rounded-2xl text-sm mb-6 font-medium flex items-center gap-3">
+                <AlertCircle size={18} className="text-rose-500 shrink-0" />
+                <span>{error}</span>
               </div>
             )}
 
             <form onSubmit={handleSubmit} className="space-y-5">
               {/* Email */}
               <div>
-                <label className="block text-slate-300 text-sm font-semibold mb-2">
+                <label className="block text-[#2B241F] text-sm font-bold mb-2">
                   Email Address
                 </label>
                 <div className="relative">
-                  <Mail size={18} className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400 pointer-events-none" />
+                  <Mail size={18} className="absolute left-4 top-1/2 -translate-y-1/2 text-[#4A3A2E]/50 pointer-events-none" />
                   <input
                     type="email"
                     name="email"
                     value={formData.email}
                     onChange={handleChange}
                     placeholder="name@company.com"
-                    className="w-full bg-slate-900/80 border border-white/15 text-white rounded-xl pl-11 pr-4 py-3.5 outline-none focus:border-violet-500 transition text-sm font-medium"
+                    className="w-full bg-[#FAF9F6] border border-[#D7C9B8] text-[#2B241F] placeholder:text-[#4A3A2E]/40 rounded-xl pl-11 pr-4 py-3.5 outline-none focus:border-[#8B6F5A] focus:ring-4 focus:ring-[#8B6F5A]/15 transition text-sm font-medium shadow-2xs"
                     required
                   />
                 </div>
@@ -219,25 +215,25 @@ const Login = () => {
               {/* Password */}
               <div>
                 <div className="flex justify-between items-center mb-2">
-                  <label className="block text-slate-300 text-sm font-semibold">
+                  <label className="block text-[#2B241F] text-sm font-bold">
                     Password
                   </label>
                   <button
                     type="button"
-                    className="text-xs text-violet-400 hover:text-violet-300 font-medium transition"
+                    className="text-xs text-[#8B6F5A] hover:text-[#785D4A] font-semibold transition"
                   >
                     Forgot Password?
                   </button>
                 </div>
                 <div className="relative">
-                  <Lock size={18} className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400 pointer-events-none" />
+                  <Lock size={18} className="absolute left-4 top-1/2 -translate-y-1/2 text-[#4A3A2E]/50 pointer-events-none" />
                   <input
                     type="password"
                     name="password"
                     value={formData.password}
                     onChange={handleChange}
                     placeholder="••••••••"
-                    className="w-full bg-slate-900/80 border border-white/15 text-white rounded-xl pl-11 pr-4 py-3.5 outline-none focus:border-violet-500 transition text-sm font-medium"
+                    className="w-full bg-[#FAF9F6] border border-[#D7C9B8] text-[#2B241F] placeholder:text-[#4A3A2E]/40 rounded-xl pl-11 pr-4 py-3.5 outline-none focus:border-[#8B6F5A] focus:ring-4 focus:ring-[#8B6F5A]/15 transition text-sm font-medium shadow-2xs"
                     required
                   />
                 </div>
@@ -247,17 +243,13 @@ const Login = () => {
               <button
                 type="submit"
                 disabled={loading}
-                className={`w-full flex items-center justify-center gap-2 ${
-                  role === "creator"
-                    ? "bg-gradient-to-r from-cyan-600 to-blue-600 hover:from-cyan-500 hover:to-blue-500 shadow-cyan-600/30"
-                    : "bg-gradient-to-r from-violet-600 to-indigo-600 hover:from-violet-500 hover:to-indigo-500 shadow-violet-600/30"
-                } disabled:opacity-60 text-white py-3.5 rounded-xl font-bold transition-all shadow-lg hover:shadow-xl hover:-translate-y-0.5 text-base mt-2`}
+                className="w-full flex items-center justify-center gap-2 bg-[#8B6F5A] hover:bg-[#785D4A] disabled:opacity-60 text-[#FAF9F6] py-3.5 rounded-xl font-bold transition-all shadow-xs hover:shadow-xs hover:-translate-y-0.5 active:translate-y-0 text-base mt-2 cursor-pointer"
               >
                 {loading ? (
                   "Verifying..."
                 ) : (
                   <>
-                    Login as {role === "creator" ? "Creator" : "Brand"}
+                    <span>Login as {role === "creator" ? "Creator" : "Brand"}</span>
                     <ArrowRight size={18} />
                   </>
                 )}
@@ -265,12 +257,12 @@ const Login = () => {
             </form>
 
             {/* Signup Redirect */}
-            <p className="text-center text-slate-400 text-sm mt-7 pt-5 border-t border-white/10">
+            <p className="text-center text-[#4A3A2E]/70 text-sm mt-7 pt-5 border-t border-[#D7C9B8]/40 font-medium">
               Don't have an account yet?{" "}
               <button
                 type="button"
                 onClick={() => navigate("/signup")}
-                className="text-violet-400 hover:text-violet-300 font-bold transition"
+                className="text-[#8B6F5A] hover:text-[#785D4A] font-bold transition hover:underline cursor-pointer"
               >
                 Create Account
               </button>

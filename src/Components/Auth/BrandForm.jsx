@@ -2,6 +2,7 @@ import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import InputField from "../Common/InputField";
 import authService from "../../services/authService";
+import { CheckCircle2, AlertCircle, ArrowRight } from "lucide-react";
 
 const BrandForm = () => {
   const navigate = useNavigate();
@@ -57,7 +58,7 @@ const BrandForm = () => {
     setLoading(true);
 
     try {
-      const response = await authService.registerBrand({
+      await authService.registerBrand({
         name: formData.companyName,
         companyName: formData.companyName,
         contactPerson: formData.contactPerson,
@@ -68,7 +69,7 @@ const BrandForm = () => {
         password: formData.password,
       });
 
-      setSuccess("Account created successfully! Redirecting...");
+      setSuccess("Account created successfully! Redirecting to dashboard...");
       setTimeout(() => {
         navigate("/brand/dashboard");
       }, 1500);
@@ -80,111 +81,128 @@ const BrandForm = () => {
   };
 
   return (
-    <form className="space-y-5" onSubmit={handleSubmit}>
+    <form className="space-y-4" onSubmit={handleSubmit}>
       {error && (
-        <div className="bg-red-500/20 border border-red-500 text-red-300 p-3 rounded-xl text-sm">
-          {error}
+        <div className="bg-rose-50 border border-rose-300 text-rose-700 p-3.5 rounded-xl text-sm font-medium flex items-center gap-2">
+          <AlertCircle size={18} className="text-rose-500 shrink-0" />
+          <span>{error}</span>
         </div>
       )}
 
       {success && (
-        <div className="bg-green-500/20 border border-green-500 text-green-300 p-3 rounded-xl text-sm">
-          {success}
+        <div className="bg-[#EDE7DC] border border-[#D7C9B8] text-[#8B6F5A] p-3.5 rounded-xl text-sm font-medium flex items-center gap-2">
+          <CheckCircle2 size={18} className="text-[#8B6F5A] shrink-0" />
+          <span>{success}</span>
         </div>
       )}
 
-      <InputField
-        label="Company Name"
-        name="companyName"
-        value={formData.companyName}
-        onChange={handleChange}
-        placeholder="Nike"
-        required
-      />
+      <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+        <InputField
+          label="Company Name"
+          name="companyName"
+          value={formData.companyName}
+          onChange={handleChange}
+          placeholder="Nike India"
+          required
+        />
 
-      <InputField
-        label="Contact Person"
-        name="contactPerson"
-        value={formData.contactPerson}
-        onChange={handleChange}
-        placeholder="John Doe"
-      />
+        <InputField
+          label="Contact Person"
+          name="contactPerson"
+          value={formData.contactPerson}
+          onChange={handleChange}
+          placeholder="Alice Brand"
+        />
+      </div>
 
-      <InputField
-        label="Email Address"
-        name="email"
-        type="email"
-        value={formData.email}
-        onChange={handleChange}
-        placeholder="john@gmail.com"
-        required
-      />
+      <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+        <InputField
+          label="Email Address"
+          name="email"
+          type="email"
+          value={formData.email}
+          onChange={handleChange}
+          placeholder="brand@company.com"
+          required
+        />
 
-      <InputField
-        label="Instagram Username"
-        name="instagramUsername"
-        value={formData.instagramUsername}
-        onChange={handleChange}
-        placeholder="@nike"
-      />
+        <InputField
+          label="Instagram Username"
+          name="instagramUsername"
+          value={formData.instagramUsername}
+          onChange={handleChange}
+          placeholder="@nike"
+        />
+      </div>
 
-      <InputField
-        label="Industry"
-        name="industry"
-        value={formData.industry}
-        onChange={handleChange}
-        placeholder="Fashion"
-      />
+      <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+        <InputField
+          label="Industry"
+          name="industry"
+          value={formData.industry}
+          onChange={handleChange}
+          placeholder="Fashion & Lifestyle"
+        />
 
-      <InputField
-        label="Country"
-        name="country"
-        value={formData.country}
-        onChange={handleChange}
-        placeholder="India"
-      />
+        <InputField
+          label="Country"
+          name="country"
+          value={formData.country}
+          onChange={handleChange}
+          placeholder="India"
+        />
+      </div>
 
-      <InputField
-        label="Password"
-        name="password"
-        type="password"
-        value={formData.password}
-        onChange={handleChange}
-        placeholder="********"
-        required
-      />
+      <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+        <InputField
+          label="Password"
+          name="password"
+          type="password"
+          value={formData.password}
+          onChange={handleChange}
+          placeholder="••••••••"
+          required
+        />
 
-      <InputField
-        label="Confirm Password"
-        name="confirmPassword"
-        type="password"
-        value={formData.confirmPassword}
-        onChange={handleChange}
-        placeholder="********"
-        required
-      />
+        <InputField
+          label="Confirm Password"
+          name="confirmPassword"
+          type="password"
+          value={formData.confirmPassword}
+          onChange={handleChange}
+          placeholder="••••••••"
+          required
+        />
+      </div>
 
-      <div className="flex items-start gap-3">
+      <div className="flex items-start gap-2.5 pt-1">
         <input
           type="checkbox"
+          id="brandAgreeToTerms"
           name="agreeToTerms"
           checked={formData.agreeToTerms}
           onChange={handleChange}
-          className="mt-1 accent-violet-600 cursor-pointer"
+          className="mt-1 accent-[#8B6F5A] cursor-pointer rounded"
         />
-
-        <p className="text-gray-400 text-sm">
-          I agree to the Terms & Conditions
-        </p>
+        <label htmlFor="brandAgreeToTerms" className="text-[#4A3A2E]/80 text-xs font-medium cursor-pointer">
+          I agree to the <span className="text-[#8B6F5A] font-semibold hover:underline">Terms & Conditions</span> and <span className="text-[#8B6F5A] font-semibold hover:underline">Privacy Policy</span>.
+        </label>
       </div>
 
       <button
         type="submit"
         disabled={loading}
-        className="w-full bg-violet-600 hover:bg-violet-700 disabled:opacity-60
-        text-white py-3 rounded-xl font-semibold transition cursor-pointer"
+        className="w-full bg-[#8B6F5A] hover:bg-[#785D4A] disabled:opacity-60
+        text-[#FAF9F6] py-3.5 rounded-xl font-bold text-sm transition-all shadow-xs hover:shadow-xs hover:-translate-y-0.5 active:translate-y-0 cursor-pointer flex items-center justify-center gap-2 mt-2"
       >
-        {loading ? "Creating Account..." : "Create Brand Account"}
+        {loading ? (
+          "Creating Brand Account..."
+        ) : (
+          <>
+            <span>Create Brand Account</span>
+            <ArrowRight size={16} />
+          </>
+        )}
       </button>
     </form>
   );

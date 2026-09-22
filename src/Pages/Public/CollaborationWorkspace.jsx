@@ -20,6 +20,9 @@ import {
   XCircle,
   Image as ImageIcon,
   Video,
+  CreditCard,
+  Wallet,
+  Sparkles,
 } from "lucide-react";
 import { useNavigate, useSearchParams } from "react-router-dom";
 import authService from "../../services/authService";
@@ -33,18 +36,18 @@ const WORKSPACE_API = "http://localhost:5000/api/workspaces";
 const CONTENT_API = "http://localhost:5000/api/content-submissions";
 
 const statusStyles = {
-  todo: "bg-slate-500/10 text-slate-300 border-slate-500/20",
-  "in-progress": "bg-amber-500/10 text-amber-300 border-amber-500/20",
-  completed: "bg-emerald-500/10 text-emerald-300 border-emerald-500/20",
+  todo: "bg-[#EDE7DC]/40 text-[#4A3A2E] border-[#D7C9B8]",
+  "in-progress": "bg-[#EDE7DC] text-[#8B6F5A] border-[#D7C9B8]",
+  completed: "bg-[#FAF9F6] text-[#8B6F5A] border-[#8B6F5A]",
 };
 
 const contentStatusStyles = {
-  submitted: "bg-blue-500/10 text-blue-300 border-blue-500/20",
-  under_review: "bg-amber-500/10 text-amber-300 border-amber-500/20",
-  changes_requested: "bg-orange-500/10 text-orange-300 border-orange-500/20",
-  approved: "bg-emerald-500/10 text-emerald-300 border-emerald-500/20",
-  published: "bg-cyan-500/10 text-cyan-300 border-cyan-500/20",
-  rejected: "bg-red-500/10 text-red-300 border-red-500/20",
+  submitted: "bg-[#EDE7DC] text-[#8B6F5A] border-[#D7C9B8]",
+  under_review: "bg-[#EDE7DC] text-[#C98B6B] border-[#D7C9B8]",
+  changes_requested: "bg-[#EDE7DC] text-[#C98B6B] border-[#D7C9B8]",
+  approved: "bg-[#FAF9F6] text-[#8B6F5A] border-[#8B6F5A]",
+  published: "bg-[#EDE7DC] text-[#8B6F5A] border-[#D7C9B8]",
+  rejected: "bg-rose-50 text-rose-700 border-rose-300",
 };
 
 const contentStatusLabels = {
@@ -69,8 +72,7 @@ export default function CollaborationWorkspace() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
 
-  const [displayBudget, setDisplayBudget] =
-  useState(null);
+  const [displayBudget, setDisplayBudget] = useState(null);
 
   const [activeTab, setActiveTab] = useState(tabFromUrl || "overview");
   useEffect(() => {
@@ -103,53 +105,40 @@ export default function CollaborationWorkspace() {
 
   const isBrand = user?.role === "brand";
   const isCreator = user?.role === "creator";
-  const viewerCurrency =
-  getCurrencyFromCountry(
-    user?.country
-  );
+  const viewerCurrency = getCurrencyFromCountry(user?.country);
+
+  const campaign = workspace?.campaignId;
+  const brand = workspace?.brandId;
+  const creator = workspace?.creatorId;
 
   useEffect(() => {
-  const loadWorkspaceBudget =
-    async () => {
-      if (
-        !campaign?.budget ||
-        !campaign?.currency ||
-        !user?.country
-      ) {
+    const loadWorkspaceBudget = async () => {
+      if (!campaign?.budget || !campaign?.currency || !user?.country) {
         return;
       }
 
       try {
-        const converted =
-          await convertCurrency(
-            campaign.budget,
-            campaign.currency,
-            viewerCurrency.code
-          );
-
-        setDisplayBudget(
-          converted
+        const converted = await convertCurrency(
+          campaign.budget,
+          campaign.currency,
+          viewerCurrency.code
         );
+
+        setDisplayBudget(converted);
       } catch (error) {
-        console.error(
-          "Workspace budget conversion error:",
-          error
-        );
-
-        setDisplayBudget(
-          campaign.budget
-        );
+        console.error("Workspace budget conversion error:", error);
+        setDisplayBudget(campaign.budget);
       }
     };
 
-  loadWorkspaceBudget();
-}, [
-  campaign?._id,
-  campaign?.budget,
-  campaign?.currency,
-  user?.country,
-  viewerCurrency.code,
-]);
+    loadWorkspaceBudget();
+  }, [
+    campaign?._id,
+    campaign?.budget,
+    campaign?.currency,
+    user?.country,
+    viewerCurrency.code,
+  ]);
 
   useEffect(() => {
     const currentUser = authService.getCurrentUser();
@@ -181,7 +170,7 @@ export default function CollaborationWorkspace() {
       console.error("Workspace loading error:", err);
       setError(
         err.response?.data?.message ||
-        "Unable to load collaboration workspace."
+          "Unable to load collaboration workspace."
       );
     } finally {
       if (showLoading) setLoading(false);
@@ -203,7 +192,7 @@ export default function CollaborationWorkspace() {
       console.error("Content submissions loading error:", err);
       alert(
         err.response?.data?.message ||
-        "Unable to load creator content submissions."
+          "Unable to load creator content submissions."
       );
     } finally {
       setLoadingSubmissions(false);
@@ -221,10 +210,6 @@ export default function CollaborationWorkspace() {
       loadContentSubmissions();
     }
   }, [applicationId, isBrand]);
-
-  const campaign = workspace?.campaignId;
-  const brand = workspace?.brandId;
-  const creator = workspace?.creatorId;
 
   const collaboratorName = isBrand
     ? creator?.name || "Creator"
@@ -259,8 +244,9 @@ export default function CollaborationWorkspace() {
       return url;
     }
 
-    return `http://localhost:5000${url.startsWith("/") ? url : `/${url}`
-      }`;
+    return `http://localhost:5000${
+      url.startsWith("/") ? url : `/${url}`
+    }`;
   };
 
   const formatDate = (value) => {
@@ -292,9 +278,7 @@ export default function CollaborationWorkspace() {
   };
 
   const getSubmissionIcon = (submission) => {
-    const type = String(
-      submission?.contentType || ""
-    ).toLowerCase();
+    const type = String(submission?.contentType || "").toLowerCase();
 
     if (
       type.includes("video") ||
@@ -325,10 +309,7 @@ export default function CollaborationWorkspace() {
       setMessage("");
     } catch (err) {
       console.error("Send message error:", err);
-      alert(
-        err.response?.data?.message ||
-        "Unable to send message."
-      );
+      alert(err.response?.data?.message || "Unable to send message.");
     } finally {
       setSendingMessage(false);
     }
@@ -369,10 +350,7 @@ export default function CollaborationWorkspace() {
       setShowTaskModal(false);
     } catch (err) {
       console.error("Add task error:", err);
-      alert(
-        err.response?.data?.message ||
-        "Unable to create task."
-      );
+      alert(err.response?.data?.message || "Unable to create task.");
     } finally {
       setAddingTask(false);
     }
@@ -393,74 +371,60 @@ export default function CollaborationWorkspace() {
       setWorkspace(response.data.workspace);
     } catch (err) {
       console.error("Update task error:", err);
-      alert(
-        err.response?.data?.message ||
-        "Unable to update task."
-      );
+      alert(err.response?.data?.message || "Unable to update task.");
     }
   };
 
-const handleFileSelect = (event) => {
-  const files = Array.from(event.target.files || []);
+  const handleFileSelect = (event) => {
+    const files = Array.from(event.target.files || []);
 
-  if (files.length > 10) {
-    alert("You can select a maximum of 10 files.");
-    return;
-  }
+    if (files.length > 10) {
+      alert("You can select a maximum of 10 files.");
+      return;
+    }
 
-  setSelectedFiles(files);
-};
+    setSelectedFiles(files);
+  };
 
-const clearSelectedFiles = () => {
-  setSelectedFiles([]);
+  const clearSelectedFiles = () => {
+    setSelectedFiles([]);
 
-  const input = document.getElementById(
-    "workspace-file-input"
-  );
+    const input = document.getElementById("workspace-file-input");
+    if (input) {
+      input.value = "";
+    }
+  };
 
-  if (input) {
-    input.value = "";
-  }
-};
-const uploadFiles = async () => {
-  if (selectedFiles.length === 0) {
-    alert("Please select at least one file.");
-    return;
-  }
+  const uploadFiles = async () => {
+    if (selectedFiles.length === 0) {
+      alert("Please select at least one file.");
+      return;
+    }
 
-  try {
-    setUploadingFile(true);
+    try {
+      setUploadingFile(true);
 
-    const formData = new FormData();
+      const formData = new FormData();
+      selectedFiles.forEach((file) => {
+        formData.append("files", file);
+      });
 
-    selectedFiles.forEach((file) => {
-      formData.append("files", file);
-    });
+      formData.append("userId", user.id);
 
-    formData.append("userId", user.id);
+      const response = await axios.post(
+        `${WORKSPACE_API}/${workspace._id}/files`,
+        formData
+      );
 
-    const response = await axios.post(
-      `${WORKSPACE_API}/${workspace._id}/files`,
-      formData
-    );
-
-    console.log("FILES UPLOADED:", response.data);
-
-    setWorkspace(response.data.workspace);
-    clearSelectedFiles();
-
-  } catch (err) {
-    console.error("File upload error:", err);
-    console.error("Server response:", err.response?.data);
-
-    alert(
-      err.response?.data?.message ||
-        "Unable to upload files."
-    );
-  } finally {
-    setUploadingFile(false);
-  }
-};
+      setWorkspace(response.data.workspace);
+      clearSelectedFiles();
+    } catch (err) {
+      console.error("File upload error:", err);
+      alert(err.response?.data?.message || "Unable to upload files.");
+    } finally {
+      setUploadingFile(false);
+    }
+  };
 
   const openContentReview = (submission) => {
     setSelectedSubmission(submission);
@@ -505,9 +469,7 @@ const uploadFiles = async () => {
 
       setContentSubmissions((prev) =>
         prev.map((item) =>
-          item._id === updatedSubmission._id
-            ? updatedSubmission
-            : item
+          item._id === updatedSubmission._id ? updatedSubmission : item
         )
       );
 
@@ -525,10 +487,7 @@ const uploadFiles = async () => {
       }
     } catch (err) {
       console.error("Content review error:", err);
-      alert(
-        err.response?.data?.message ||
-        "Unable to update content status."
-      );
+      alert(err.response?.data?.message || "Unable to update content status.");
     } finally {
       setReviewLoading(false);
     }
@@ -536,18 +495,19 @@ const uploadFiles = async () => {
 
   const openCreatorSubmission = () => {
     navigate(
-      `/creator/content-submission?campaignId=${campaign?._id || campaignIdFromUrl || ""
+      `/creator/content-submission?campaignId=${
+        campaign?._id || campaignIdFromUrl || ""
       }&applicationId=${applicationId || ""}`
     );
   };
 
   if (loading) {
     return (
-      <div className="min-h-screen bg-[#080812] text-white flex items-center justify-center">
+      <div className="min-h-screen bg-[#FAF9F6] text-[#2B241F] flex items-center justify-center font-sans">
         <div className="text-center">
-          <div className="w-10 h-10 border-4 border-violet-500 border-t-transparent rounded-full animate-spin mx-auto mb-4" />
-          <p className="text-gray-400">
-            Loading workspace...
+          <div className="w-8 h-8 border-2 border-[#8B6F5A] border-t-transparent rounded-full animate-spin mx-auto mb-3" />
+          <p className="text-xs font-semibold text-[#4A3A2E]/70">
+            Loading collaboration workspace...
           </p>
         </div>
       </div>
@@ -556,15 +516,15 @@ const uploadFiles = async () => {
 
   if (error || !workspace) {
     return (
-      <div className="min-h-screen bg-[#080812] text-white flex items-center justify-center px-6">
-        <div className="text-center max-w-md">
-          <div className="text-red-400 text-lg mb-4">
+      <div className="min-h-screen bg-[#FAF9F6] text-[#2B241F] flex items-center justify-center px-6 font-sans">
+        <div className="text-center max-w-sm bg-[#FAF9F6] p-8 rounded-3xl border border-red-300 shadow-xs w-full">
+          <div className="text-rose-700 text-sm font-bold mb-4">
             {error || "Workspace not found"}
           </div>
 
           <button
             onClick={() => navigate(-1)}
-            className="px-5 py-2 rounded-xl bg-violet-600 hover:bg-violet-700"
+            className="w-full px-5 py-2.5 rounded-xl bg-[#8B6F5A] hover:bg-[#785D4A] text-[#FAF9F6] text-xs font-bold shadow-xs transition"
           >
             Go Back
           </button>
@@ -574,123 +534,114 @@ const uploadFiles = async () => {
   }
 
   return (
-    <div className="min-h-screen bg-[#080812] text-white">
-      <header className="border-b border-white/10 bg-[#0d0d1a] sticky top-0 z-40">
+    <div className="min-h-screen bg-[#FAF9F6] text-[#2B241F] font-sans">
+      {/* TOP HEADER */}
+      <header className="border-b border-[#D7C9B8]/50 bg-[#FAF9F6]/90 backdrop-blur-md sticky top-0 z-40">
         <div className="max-w-7xl mx-auto px-6 py-4 flex items-center justify-between gap-4">
           <div className="flex items-center gap-4 min-w-0">
             <button
               onClick={() => navigate(-1)}
-              className="p-2 rounded-lg hover:bg-white/10 shrink-0"
+              className="p-2 rounded-xl border border-[#D7C9B8] bg-[#FAF9F6] hover:bg-[#EDE7DC] text-[#4A3A2E] hover:text-[#2B241F] shrink-0 shadow-2xs transition"
               title="Go back"
             >
-              <ArrowLeft size={20} />
+              <ArrowLeft size={18} />
             </button>
 
             <div className="min-w-0">
-              <h1 className="text-xl font-bold truncate">
+              <h1 className="text-lg font-extrabold text-[#2B241F] tracking-tight truncate">
                 {campaign?.title || "Collaboration Workspace"}
               </h1>
 
-              <p className="text-sm text-gray-400 truncate">
-                Working with {collaboratorName}
+              <p className="text-xs text-[#4A3A2E]/70 truncate">
+                Working with <span className="font-bold text-[#8B6F5A]">{collaboratorName}</span>
               </p>
             </div>
           </div>
 
-          <div className="hidden sm:flex items-center gap-2 px-4 py-2 rounded-xl bg-green-500/10 border border-green-500/20 text-green-400 shrink-0">
-            <CheckCircle size={16} />
+          <div className="hidden sm:flex items-center gap-1.5 px-3 py-1 rounded-full bg-[#EDE7DC] border border-[#D7C9B8] text-[#8B6F5A] text-xs font-bold shrink-0">
+            <CheckCircle size={14} />
             Collaboration Active
           </div>
         </div>
       </header>
 
-      <main className="max-w-7xl mx-auto px-6 py-8">
-        {/* Collaboration summary */}
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-5 mb-8">
-          <div className="md:col-span-2 bg-[#11111f] border border-white/10 rounded-2xl p-5">
-            <div className="flex items-center gap-3 mb-5">
-              <Users
-                size={20}
-                className="text-violet-400"
-              />
-              <h2 className="font-semibold">
-                Collaboration
+      <main className="max-w-7xl mx-auto px-6 py-8 space-y-6">
+        {/* COLLABORATION SUMMARY */}
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-5">
+          <div className="md:col-span-2 bg-[#FAF9F6] border border-[#D7C9B8] rounded-2xl p-6 shadow-xs">
+            <div className="flex items-center gap-2.5 mb-4">
+              <div className="p-2 rounded-xl bg-[#EDE7DC] text-[#8B6F5A] border border-[#D7C9B8]">
+                <Users size={18} />
+              </div>
+              <h2 className="font-extrabold text-[#2B241F] text-sm tracking-tight">
+                Collaboration Partners
               </h2>
             </div>
 
             <div className="grid sm:grid-cols-2 gap-4">
-              <div className="p-4 rounded-xl bg-white/5">
-                <p className="text-xs text-gray-500 mb-1">
+              <div className="p-4 rounded-xl bg-[#EDE7DC]/40 border border-[#D7C9B8]/60">
+                <p className="text-[10px] uppercase font-bold text-[#4A3A2E]/60 tracking-wider mb-0.5">
                   Brand
                 </p>
-                <p className="font-medium">
-                  {brand?.companyName ||
-                    brand?.name ||
-                    "Brand"}
+                <p className="font-bold text-[#2B241F] text-sm">
+                  {brand?.companyName || brand?.name || "Brand"}
                 </p>
-                <p className="text-sm text-gray-400 mt-1">
+                <p className="text-xs text-[#4A3A2E]/70 mt-0.5 truncate">
                   {brand?.email || "No email"}
                 </p>
               </div>
 
-              <div className="p-4 rounded-xl bg-white/5">
-                <p className="text-xs text-gray-500 mb-1">
+              <div className="p-4 rounded-xl bg-[#EDE7DC]/40 border border-[#D7C9B8]/60">
+                <p className="text-[10px] uppercase font-bold text-[#4A3A2E]/60 tracking-wider mb-0.5">
                   Creator
                 </p>
-                <p className="font-medium">
+                <p className="font-bold text-[#2B241F] text-sm">
                   {creator?.name || "Creator"}
                 </p>
-                <p className="text-sm text-gray-400 mt-1">
+                <p className="text-xs text-[#4A3A2E]/70 mt-0.5 truncate">
                   {creator?.email || "No email"}
                 </p>
               </div>
             </div>
           </div>
 
-          <div className="bg-[#11111f] border border-white/10 rounded-2xl p-5">
-            <p className="text-xs text-gray-500 mb-2">
-              Campaign Budget
-            </p>
+          <div className="bg-[#FAF9F6] border border-[#D7C9B8] rounded-2xl p-6 shadow-xs flex flex-col justify-between">
+            <div>
+              <p className="text-[10px] uppercase font-bold text-[#4A3A2E]/60 tracking-wider mb-1">
+                Campaign Budget
+              </p>
 
-            <p className="text-2xl font-bold text-violet-400">
-  {displayBudget === null
-    ? "Calculating..."
-    : formatCurrency(
-        displayBudget,
-        viewerCurrency.code
-      )}
-</p>
+              <p className="text-2xl font-black text-[#2B241F]">
+                {displayBudget === null
+                  ? "Calculating..."
+                  : formatCurrency(displayBudget, viewerCurrency.code)}
+              </p>
 
-<p className="text-xs text-gray-500 mt-1">
-  Original:{" "}
-  {formatCurrency(
-    campaign?.budget,
-    campaign?.currency || "INR"
-  )}
-</p>
+              <p className="text-[11px] text-[#4A3A2E]/60 mt-0.5">
+                Original:{" "}
+                {formatCurrency(campaign?.budget, campaign?.currency || "INR")}
+              </p>
 
-            <p className="text-sm text-gray-400 mt-2">
-              {campaign?.campaignType || "Campaign"}
-            </p>
+              <span className="inline-block px-2.5 py-0.5 rounded-full bg-[#EDE7DC] text-[#8B6F5A] text-xs font-bold border border-[#D7C9B8] mt-3">
+                {campaign?.campaignType || "Collaboration"}
+              </span>
+            </div>
 
             {campaign?.startDate && campaign?.endDate && (
-              <div className="flex items-center gap-2 text-xs text-gray-500 mt-4">
-                <Calendar size={14} />
-                {formatDate(campaign.startDate)} —{" "}
-                {formatDate(campaign.endDate)}
+              <div className="flex items-center gap-1.5 text-xs text-[#4A3A2E]/60 font-medium pt-3 mt-3 border-t border-[#D7C9B8]/40">
+                <Calendar size={13} className="text-[#8B6F5A]" />
+                {formatDate(campaign.startDate)} — {formatDate(campaign.endDate)}
               </div>
             )}
           </div>
         </div>
 
-        {/* Tabs */}
-        <div className="flex gap-1 overflow-x-auto border-b border-white/10">
+        {/* WORKSPACE TABS */}
+        <div className="flex gap-2 overflow-x-auto border-b border-[#D7C9B8]/50 pb-px">
           {[
             ["overview", "Overview"],
             ["tasks", "Tasks & Deliverables"],
-            ...(isBrand
-              ? [["content-review", "Content Review"]]
-              : []),
+            ...(isBrand ? [["content-review", "Content Review"]] : []),
             ["files", "Files"],
             ["messages", "Messages"],
             ["activity", "Activity"],
@@ -698,21 +649,22 @@ const uploadFiles = async () => {
             <button
               key={id}
               onClick={() => setActiveTab(id)}
-              className={`whitespace-nowrap border-b-2 px-4 py-3 text-sm font-medium transition ${activeTab === id
-                  ? "border-violet-400 text-white"
-                  : "border-transparent text-slate-500 hover:text-slate-300"
-                }`}
+              className={`whitespace-nowrap pb-3 px-3.5 text-xs font-bold transition flex items-center gap-1.5 border-b-2 ${
+                activeTab === id
+                  ? "border-[#8B6F5A] text-[#8B6F5A]"
+                  : "border-transparent text-[#4A3A2E]/70 hover:text-[#2B241F]"
+              }`}
             >
-              {label}
+              <span>{label}</span>
 
-              {id === "messages" && (
-                <span className="ml-2 rounded-full bg-violet-500/20 px-1.5 py-0.5 text-[10px] text-violet-300">
+              {id === "messages" && messages.length > 0 && (
+                <span className="rounded-full bg-[#EDE7DC] px-1.5 py-0.2 text-[10px] font-extrabold text-[#8B6F5A]">
                   {messages.length}
                 </span>
               )}
 
               {id === "content-review" && pendingReviews > 0 && (
-                <span className="ml-2 rounded-full bg-orange-500/20 px-1.5 py-0.5 text-[10px] text-orange-300">
+                <span className="rounded-full bg-[#EDE7DC] px-1.5 py-0.2 text-[10px] font-extrabold text-[#C98B6B]">
                   {pendingReviews}
                 </span>
               )}
@@ -720,118 +672,130 @@ const uploadFiles = async () => {
           ))}
         </div>
 
-        {/* Overview */}
+        {/* =====================================================
+            TAB 1: OVERVIEW
+        ===================================================== */}
         {activeTab === "overview" && (
-          <div className="mt-7 grid gap-6 lg:grid-cols-[1.4fr_0.8fr]">
+          <div className="grid gap-6 lg:grid-cols-[1.4fr_0.8fr]">
             <div className="space-y-6">
-              <section className="rounded-2xl border border-white/10 bg-white/[0.025] p-6">
+              {/* Campaign Progress */}
+              <section className="rounded-2xl border border-[#D7C9B8] bg-[#FAF9F6] p-6 shadow-xs">
                 <div className="flex items-center justify-between">
                   <div>
-                    <h2 className="text-lg font-semibold">
-                      Campaign Progress
+                    <h2 className="text-base font-extrabold text-[#2B241F] tracking-tight">
+                      Campaign Deliverable Progress
                     </h2>
-                    <p className="mt-1 text-sm text-slate-500">
-                      {completedTasks} of {tasks.length} tasks
-                      completed
+                    <p className="mt-0.5 text-xs text-[#4A3A2E]/70">
+                      {completedTasks} of {tasks.length} tasks completed
                     </p>
                   </div>
 
-                  <span className="text-2xl font-bold text-violet-300">
+                  <span className="text-xl font-black text-[#8B6F5A]">
                     {progress}%
                   </span>
                 </div>
 
-                <div className="mt-5 h-2 overflow-hidden rounded-full bg-white/10">
+                <div className="mt-4 h-2.5 overflow-hidden rounded-full bg-[#EDE7DC]">
                   <div
-                    className="h-full rounded-full bg-violet-500 transition-all"
+                    className="h-full rounded-full bg-gradient-to-r from-[#8B6F5A] to-[#C98B6B] transition-all duration-500"
                     style={{ width: `${progress}%` }}
                   />
                 </div>
               </section>
 
-              <section className="rounded-2xl border border-white/10 bg-white/[0.025] p-6">
-                <div className="flex items-center gap-3">
-                  <FileCheck
-                    size={20}
-                    className="text-cyan-400"
-                  />
+              {/* Content Workflow Card */}
+              <section className="rounded-2xl border border-[#D7C9B8] bg-[#FAF9F6] p-6 shadow-xs">
+                <div className="flex items-center gap-3 mb-4">
+                  <div className="p-2 rounded-xl bg-[#EDE7DC] text-[#8B6F5A] border border-[#D7C9B8]">
+                    <FileCheck size={18} />
+                  </div>
                   <div>
-                    <h2 className="font-semibold">
+                    <h2 className="text-base font-extrabold text-[#2B241F] tracking-tight">
                       Content Workflow
                     </h2>
-                    <p className="text-sm text-slate-500 mt-1">
+                    <p className="text-xs text-[#4A3A2E]/70 mt-0.5">
                       {isBrand
-                        ? `${contentSubmissions.length} content submission${contentSubmissions.length !== 1
-                          ? "s"
-                          : ""
-                        } received`
-                        : "Submit campaign content for brand review."}
+                        ? `${contentSubmissions.length} deliverable submission${
+                            contentSubmissions.length !== 1 ? "s" : ""
+                          } received`
+                        : "Submit campaign content for brand review & approval."}
                     </p>
                   </div>
                 </div>
 
                 {isBrand ? (
-                  <button
-                    onClick={() =>
-                      setActiveTab("content-review")
-                    }
-                    className="mt-5 w-full rounded-xl bg-violet-600 px-4 py-3 text-sm font-semibold hover:bg-violet-500"
-                  >
-                    Review Creator Content
-                  </button>
+                  <div className="space-y-3 pt-2">
+                    <button
+                      onClick={() => setActiveTab("content-review")}
+                      className="w-full rounded-xl bg-[#8B6F5A] hover:bg-[#785D4A] px-4 py-2.5 text-xs font-bold text-[#FAF9F6] shadow-xs transition"
+                    >
+                      Review Creator Deliverables
+                    </button>
+
+                    {contentSubmissions.some((s) =>
+                      ["approved", "published"].includes(s.status)
+                    ) && (
+                      <button
+                        onClick={() => navigate("/brand/payments")}
+                        className="w-full rounded-xl bg-[#8B6F5A] hover:bg-[#785D4A] px-4 py-2.5 text-xs font-bold text-[#FAF9F6] flex items-center justify-center gap-2 shadow-xs transition"
+                      >
+                        <CreditCard size={15} />
+                        Pay Creator (Payments)
+                      </button>
+                    )}
+                  </div>
                 ) : (
                   <button
                     onClick={openCreatorSubmission}
-                    className="mt-5 w-full rounded-xl bg-violet-600 px-4 py-3 text-sm font-semibold hover:bg-violet-500"
+                    className="w-full rounded-xl bg-[#8B6F5A] hover:bg-[#785D4A] px-4 py-2.5 text-xs font-bold text-[#FAF9F6] shadow-xs transition"
                   >
-                    Submit Content
+                    Submit Deliverable Content
                   </button>
                 )}
               </section>
             </div>
 
-            <section className="rounded-2xl border border-white/10 bg-white/[0.025] p-6">
-              <h2 className="font-semibold">
-                Campaign Details
+            {/* Campaign Details Right Card */}
+            <section className="rounded-2xl border border-[#D7C9B8] bg-[#FAF9F6] p-6 shadow-xs space-y-4">
+              <h2 className="text-base font-extrabold text-[#2B241F] tracking-tight">
+                Campaign Brief
               </h2>
 
-              <div className="mt-5 space-y-4">
+              <div className="space-y-3.5 text-xs">
                 <div>
-                  <p className="text-xs text-slate-500">
+                  <p className="text-[10px] font-bold uppercase tracking-wider text-[#4A3A2E]/60">
                     Category
                   </p>
-                  <p className="text-sm mt-1">
+                  <p className="font-semibold text-[#2B241F] mt-0.5">
                     {campaign?.category || "—"}
                   </p>
                 </div>
 
                 <div>
-                  <p className="text-xs text-slate-500">
-                    Platforms
+                  <p className="text-[10px] font-bold uppercase tracking-wider text-[#4A3A2E]/60">
+                    Target Platforms
                   </p>
-                  <div className="flex flex-wrap gap-2 mt-2">
+                  <div className="flex flex-wrap gap-1.5 mt-1.5">
                     {(campaign?.platforms || []).length > 0 ? (
-                      campaign.platforms.map((platform) => (
+                      campaign.platforms.map((plat) => (
                         <span
-                          key={platform}
-                          className="rounded-full bg-white/5 border border-white/10 px-2.5 py-1 text-xs text-slate-300"
+                          key={plat}
+                          className="rounded-lg bg-[#EDE7DC] border border-[#D7C9B8] px-2.5 py-0.5 text-xs font-bold text-[#2B241F]"
                         >
-                          {platform}
+                          {plat}
                         </span>
                       ))
                     ) : (
-                      <span className="text-sm text-slate-500">
-                        —
-                      </span>
+                      <span className="text-[#4A3A2E]/60">—</span>
                     )}
                   </div>
                 </div>
 
                 <div>
-                  <p className="text-xs text-slate-500">
+                  <p className="text-[10px] font-bold uppercase tracking-wider text-[#4A3A2E]/60">
                     Deliverables
                   </p>
-                  <p className="text-sm text-slate-300 mt-1 whitespace-pre-wrap">
+                  <p className="text-[#4A3A2E] mt-1 whitespace-pre-wrap leading-relaxed bg-[#EDE7DC]/40 p-3 rounded-xl border border-[#D7C9B8]/50">
                     {campaign?.deliverables || "—"}
                   </p>
                 </div>
@@ -840,43 +804,42 @@ const uploadFiles = async () => {
           </div>
         )}
 
-        {/* Tasks */}
+        {/* =====================================================
+            TAB 2: TASKS & DELIVERABLES
+        ===================================================== */}
         {activeTab === "tasks" && (
-          <section className="mt-7 bg-[#11111f] border border-white/10 rounded-2xl overflow-hidden">
-            <div className="p-5 border-b border-white/10 flex items-center justify-between gap-4">
+          <section className="bg-[#FAF9F6] border border-[#D7C9B8] rounded-2xl overflow-hidden shadow-xs">
+            <div className="p-5 border-b border-[#D7C9B8]/40 flex items-center justify-between gap-4">
               <div className="flex items-center gap-3">
-                <CheckCircle
-                  size={20}
-                  className="text-violet-400"
-                />
+                <div className="p-2 rounded-xl bg-[#EDE7DC] text-[#8B6F5A] border border-[#D7C9B8]">
+                  <CheckCircle size={18} />
+                </div>
                 <div>
-                  <h2 className="font-semibold">
-                    Tasks & Deliverables
+                  <h2 className="text-base font-extrabold text-[#2B241F] tracking-tight">
+                    Tasks & Deliverables Checklist
                   </h2>
-                  <p className="text-xs text-slate-500 mt-1">
-                    Shared tasks for this collaboration.
+                  <p className="text-xs text-[#4A3A2E]/70 mt-0.5">
+                    Manage project milestones and action items.
                   </p>
                 </div>
               </div>
 
               <button
                 onClick={() => setShowTaskModal(true)}
-                className="flex items-center gap-2 px-4 py-2 bg-violet-600 hover:bg-violet-700 rounded-xl text-sm shrink-0"
+                className="flex items-center gap-1.5 px-4 py-2 bg-[#8B6F5A] hover:bg-[#785D4A] text-[#FAF9F6] rounded-xl text-xs font-bold shadow-xs transition"
               >
-                <Plus size={16} />
+                <Plus size={14} />
                 Add Task
               </button>
             </div>
 
-            <div className="p-5">
+            <div className="p-6">
               {tasks.length === 0 ? (
-                <div className="text-center py-12">
-                  <CheckCircle
-                    size={38}
-                    className="mx-auto mb-3 text-gray-600"
-                  />
-                  <p className="text-gray-500">
-                    No tasks yet.
+                <div className="text-center py-12 bg-[#EDE7DC]/30 rounded-2xl border border-dashed border-[#D7C9B8]">
+                  <CheckCircle size={36} className="mx-auto mb-2 text-[#4A3A2E]/40" />
+                  <p className="text-xs font-bold text-[#2B241F]">No tasks created yet</p>
+                  <p className="text-[11px] text-[#4A3A2E]/60 mt-0.5">
+                    Click "Add Task" to list collaboration deliverables.
                   </p>
                 </div>
               ) : (
@@ -884,55 +847,47 @@ const uploadFiles = async () => {
                   {tasks.map((task) => (
                     <div
                       key={task._id}
-                      className="p-4 rounded-xl bg-white/5 border border-white/5"
+                      className="p-4 rounded-xl bg-[#EDE7DC]/30 border border-[#D7C9B8]/70 flex items-start justify-between gap-4"
                     >
-                      <div className="flex items-start justify-between gap-4">
-                        <div className="min-w-0">
-                          <h3
-                            className={`font-medium ${task.status === "completed"
-                                ? "line-through text-slate-500"
-                                : ""
-                              }`}
-                          >
-                            {task.title}
-                          </h3>
-
-                          {task.description && (
-                            <p className="text-sm text-gray-400 mt-1 whitespace-pre-wrap">
-                              {task.description}
-                            </p>
-                          )}
-
-                          {task.dueDate && (
-                            <div className="flex items-center gap-2 text-xs text-gray-500 mt-3">
-                              <Calendar size={14} />
-                              Due {formatDate(task.dueDate)}
-                            </div>
-                          )}
-                        </div>
-
-                        <select
-                          value={task.status || "todo"}
-                          onChange={(event) =>
-                            updateTask(
-                              task._id,
-                              event.target.value
-                            )
-                          }
-                          className={`rounded-lg border px-3 py-2 text-sm shrink-0 outline-none ${statusStyles[
-                            task.status || "todo"
-                            ] || statusStyles.todo
-                            } bg-[#181827]`}
+                      <div className="min-w-0">
+                        <h3
+                          className={`font-bold text-xs ${
+                            task.status === "completed"
+                              ? "line-through text-[#4A3A2E]/40"
+                              : "text-[#2B241F]"
+                          }`}
                         >
-                          <option value="todo">To Do</option>
-                          <option value="in-progress">
-                            In Progress
-                          </option>
-                          <option value="completed">
-                            Completed
-                          </option>
-                        </select>
+                          {task.title}
+                        </h3>
+
+                        {task.description && (
+                          <p className="text-xs text-[#4A3A2E]/70 mt-1 whitespace-pre-wrap">
+                            {task.description}
+                          </p>
+                        )}
+
+                        {task.dueDate && (
+                          <div className="flex items-center gap-1.5 text-[11px] text-[#4A3A2E]/60 mt-2 font-medium">
+                            <Calendar size={12} className="text-[#8B6F5A]" />
+                            Due {formatDate(task.dueDate)}
+                          </div>
+                        )}
                       </div>
+
+                      <select
+                        value={task.status || "todo"}
+                        onChange={(event) =>
+                          updateTask(task._id, event.target.value)
+                        }
+                        className={`rounded-xl border px-3 py-1.5 text-xs font-bold shrink-0 outline-none ${
+                          statusStyles[task.status || "todo"] ||
+                          statusStyles.todo
+                        }`}
+                      >
+                        <option value="todo">To Do</option>
+                        <option value="in-progress">In Progress</option>
+                        <option value="completed">Completed</option>
+                      </select>
                     </div>
                   ))}
                 </div>
@@ -941,21 +896,22 @@ const uploadFiles = async () => {
           </section>
         )}
 
-        {/* Brand Content Review */}
+        {/* =====================================================
+            TAB 3: BRAND CONTENT REVIEW
+        ===================================================== */}
         {activeTab === "content-review" && isBrand && (
-          <section className="mt-7 bg-[#11111f] border border-white/10 rounded-2xl overflow-hidden">
-            <div className="p-5 border-b border-white/10 flex items-center justify-between gap-4">
+          <section className="bg-[#FAF9F6] border border-[#D7C9B8] rounded-2xl overflow-hidden shadow-xs">
+            <div className="p-5 border-b border-[#D7C9B8]/40 flex items-center justify-between gap-4">
               <div className="flex items-center gap-3">
-                <FileCheck
-                  size={21}
-                  className="text-violet-400"
-                />
+                <div className="p-2 rounded-xl bg-[#EDE7DC] text-[#8B6F5A] border border-[#D7C9B8]">
+                  <FileCheck size={18} />
+                </div>
                 <div>
-                  <h2 className="font-semibold">
-                    Creator Content Review
+                  <h2 className="text-base font-extrabold text-[#2B241F] tracking-tight">
+                    Creator Deliverables Review
                   </h2>
-                  <p className="text-sm text-slate-500 mt-1">
-                    Review content submitted for this campaign.
+                  <p className="text-xs text-[#4A3A2E]/70 mt-0.5">
+                    Review and approve submitted content from {collaboratorName}.
                   </p>
                 </div>
               </div>
@@ -963,116 +919,89 @@ const uploadFiles = async () => {
               <button
                 onClick={loadContentSubmissions}
                 disabled={loadingSubmissions}
-                className="rounded-xl border border-white/10 bg-white/5 px-4 py-2 text-sm hover:bg-white/10 disabled:opacity-50"
+                className="rounded-xl border border-[#D7C9B8] bg-[#FAF9F6] hover:bg-[#EDE7DC] text-[#2B241F] px-3.5 py-1.5 text-xs font-bold shadow-2xs disabled:opacity-50"
               >
-                {loadingSubmissions
-                  ? "Refreshing..."
-                  : "Refresh"}
+                {loadingSubmissions ? "Refreshing..." : "Refresh"}
               </button>
             </div>
 
-            <div className="p-5">
+            <div className="p-6">
               {loadingSubmissions ? (
                 <div className="py-12 text-center">
-                  <div className="w-9 h-9 border-4 border-violet-500 border-t-transparent rounded-full animate-spin mx-auto mb-3" />
-                  <p className="text-sm text-slate-500">
-                    Loading submissions...
-                  </p>
+                  <div className="w-8 h-8 border-2 border-[#8B6F5A] border-t-transparent rounded-full animate-spin mx-auto mb-2" />
+                  <p className="text-xs text-[#4A3A2E]/60">Loading submissions...</p>
                 </div>
               ) : contentSubmissions.length === 0 ? (
-                <div className="py-14 text-center">
-                  <FileCheck
-                    size={44}
-                    className="mx-auto mb-4 text-slate-600"
-                  />
-                  <h3 className="font-medium text-slate-300">
-                    No content submitted yet
+                <div className="py-14 text-center bg-[#EDE7DC]/30 rounded-2xl border border-dashed border-[#D7C9B8]">
+                  <FileCheck size={40} className="mx-auto mb-2 text-[#4A3A2E]/40" />
+                  <h3 className="font-bold text-xs text-[#2B241F]">
+                    No deliverables submitted yet
                   </h3>
-                  <p className="text-sm text-slate-500 mt-1">
-                    The creator's campaign content will appear
-                    here after submission.
+                  <p className="text-[11px] text-[#4A3A2E]/60 mt-0.5">
+                    The creator's campaign content will appear here once uploaded.
                   </p>
                 </div>
               ) : (
                 <div className="space-y-4">
                   {contentSubmissions.map((submission) => {
                     const Icon = getSubmissionIcon(submission);
-                    const status =
-                      submission.status || "submitted";
+                    const status = submission.status || "submitted";
 
                     return (
                       <div
                         key={submission._id}
-                        className="rounded-2xl border border-white/10 bg-white/[0.025] p-5"
+                        className="rounded-xl border border-[#D7C9B8]/70 bg-[#EDE7DC]/20 p-5"
                       >
-                        <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-5">
-                          <div className="flex items-start gap-4 min-w-0">
-                            <div className="w-12 h-12 rounded-xl bg-violet-500/10 flex items-center justify-center shrink-0">
-                              <Icon
-                                size={22}
-                                className="text-violet-400"
-                              />
+                        <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-4">
+                          <div className="flex items-start gap-3.5 min-w-0">
+                            <div className="w-11 h-11 rounded-xl bg-[#FAF9F6] border border-[#D7C9B8] flex items-center justify-center text-[#8B6F5A] shrink-0 shadow-2xs">
+                              <Icon size={20} />
                             </div>
 
                             <div className="min-w-0">
-                              <h3 className="font-semibold truncate">
-                                {submission.title ||
-                                  "Content Submission"}
+                              <h3 className="font-bold text-[#2B241F] text-sm truncate">
+                                {submission.title || "Content Submission"}
                               </h3>
 
-                              <div className="flex flex-wrap items-center gap-2 mt-2">
-                                <span className="text-xs text-slate-400">
+                              <div className="flex flex-wrap items-center gap-2 mt-1.5">
+                                <span className="text-xs font-bold text-[#4A3A2E]">
                                   {submission.platform || "Platform"}
                                 </span>
-
-                                <span className="text-slate-700">
-                                  •
+                                <span className="text-[#D7C9B8]">•</span>
+                                <span className="text-xs text-[#4A3A2E]/70">
+                                  {submission.contentType || "Content"}
                                 </span>
-
-                                <span className="text-xs text-slate-400">
-                                  {submission.contentType ||
-                                    "Content"}
-                                </span>
-
                                 <span
-                                  className={`rounded-full border px-2.5 py-1 text-[11px] font-medium ${contentStatusStyles[
-                                    status
-                                    ] ||
+                                  className={`rounded-full border px-2 py-0.2 text-[10px] font-bold ${
+                                    contentStatusStyles[status] ||
                                     contentStatusStyles.submitted
-                                    }`}
+                                  }`}
                                 >
-                                  {contentStatusLabels[status] ||
-                                    status}
+                                  {contentStatusLabels[status] || status}
                                 </span>
                               </div>
 
-                              <p className="text-xs text-slate-500 mt-2">
-                                Submitted{" "}
-                                {formatDateTime(
-                                  submission.submittedAt ||
-                                  submission.createdAt
-                                )}
+                              <p className="text-[11px] text-[#4A3A2E]/50 mt-1">
+                                Submitted {formatDateTime(submission.submittedAt || submission.createdAt)}
                               </p>
                             </div>
                           </div>
 
                           <button
-                            onClick={() =>
-                              openContentReview(submission)
-                            }
-                            className="flex items-center justify-center gap-2 rounded-xl bg-violet-600 hover:bg-violet-500 px-4 py-2.5 text-sm font-semibold shrink-0"
+                            onClick={() => openContentReview(submission)}
+                            className="flex items-center justify-center gap-1.5 rounded-xl bg-[#8B6F5A] hover:bg-[#785D4A] text-[#FAF9F6] px-4 py-2 text-xs font-bold shadow-xs shrink-0"
                           >
-                            <Eye size={16} />
+                            <Eye size={14} />
                             Review Content
                           </button>
                         </div>
 
                         {submission.feedback && (
-                          <div className="mt-4 rounded-xl border border-orange-500/20 bg-orange-500/5 p-4">
-                            <p className="text-xs font-medium text-orange-300">
-                              Creator feedback/history
+                          <div className="mt-3.5 rounded-xl border border-[#D7C9B8] bg-[#EDE7DC]/50 p-3.5">
+                            <p className="text-xs font-bold text-[#2B241F]">
+                              Review Feedback / History
                             </p>
-                            <p className="text-sm text-slate-300 mt-1 whitespace-pre-wrap">
+                            <p className="text-xs text-[#4A3A2E] mt-1 whitespace-pre-wrap">
                               {submission.feedback}
                             </p>
                           </div>
@@ -1086,96 +1015,81 @@ const uploadFiles = async () => {
           </section>
         )}
 
-        {/* Files */}
+        {/* =====================================================
+            TAB 4: SHARED FILES
+        ===================================================== */}
         {activeTab === "files" && (
-          <section className="mt-7 bg-[#11111f] border border-white/10 rounded-2xl overflow-hidden">
-            <div className="p-5 border-b border-white/10 flex items-center justify-between gap-4">
+          <section className="bg-[#FAF9F6] border border-[#D7C9B8] rounded-2xl overflow-hidden shadow-xs">
+            <div className="p-5 border-b border-[#D7C9B8]/40 flex items-center justify-between gap-4">
               <div className="flex items-center gap-3">
-                <FileText
-                  size={20}
-                  className="text-cyan-400"
-                />
+                <div className="p-2 rounded-xl bg-[#EDE7DC] text-[#8B6F5A] border border-[#D7C9B8]">
+                  <FileText size={18} />
+                </div>
                 <div>
-                  <h2 className="font-semibold">
-                    Shared Files
+                  <h2 className="text-base font-extrabold text-[#2B241F] tracking-tight">
+                    Shared Files & Briefs
                   </h2>
-                  <p className="text-sm text-slate-500 mt-1">
-                    Campaign briefs and collaboration assets.
+                  <p className="text-xs text-[#4A3A2E]/70 mt-0.5">
+                    Campaign briefs, creative guidelines, and assets.
                   </p>
                 </div>
               </div>
 
               <div>
-               <input
-  type="file"
-  id="workspace-file-input"
-  className="hidden"
-  multiple
-  accept="image/*,.pdf,.doc,.docx,.xls,.xlsx,.ppt,.pptx"
-  onChange={handleFileSelect}
-/>
-
+                <input
+                  type="file"
+                  id="workspace-file-input"
+                  className="hidden"
+                  multiple
+                  accept="image/*,.pdf,.doc,.docx,.xls,.xlsx,.ppt,.pptx"
+                  onChange={handleFileSelect}
+                />
                 <label
                   htmlFor="workspace-file-input"
-                  className="flex items-center gap-2 px-4 py-2 bg-cyan-600 hover:bg-cyan-700 rounded-xl text-sm cursor-pointer"
+                  className="flex items-center gap-1.5 px-4 py-2 bg-[#8B6F5A] hover:bg-[#785D4A] text-[#FAF9F6] rounded-xl text-xs font-bold cursor-pointer shadow-xs transition"
                 >
-                  <Upload size={16} />
-                  Add File
+                  <Upload size={14} />
+                  Upload File
                 </label>
               </div>
             </div>
 
-            <div className="p-5">
+            <div className="p-6">
               {selectedFiles.length > 0 && (
-                <div className="mb-5 p-4 rounded-xl bg-violet-500/10 border border-violet-500/20">
-
-                  <div className="flex items-center justify-between mb-4">
+                <div className="mb-5 p-4 rounded-2xl bg-[#EDE7DC]/40 border border-[#D7C9B8]">
+                  <div className="flex items-center justify-between mb-3">
                     <div>
-                      <p className="text-sm font-semibold text-white">
+                      <p className="text-xs font-bold text-[#2B241F]">
                         Selected Files
                       </p>
-
-                      <p className="text-xs text-gray-400 mt-1">
-                        {selectedFiles.length} file
-                        {selectedFiles.length !== 1 ? "s" : ""} selected
+                      <p className="text-[11px] text-[#4A3A2E]/60">
+                        {selectedFiles.length} file{selectedFiles.length !== 1 ? "s" : ""} selected
                       </p>
                     </div>
 
                     <button
                       onClick={clearSelectedFiles}
-                      className="p-2 rounded-lg hover:bg-white/10"
-                      title="Remove all"
+                      className="p-1 rounded-lg text-[#4A3A2E]/50 hover:bg-[#EDE7DC]"
                     >
-                      <X size={18} />
+                      <X size={15} />
                     </button>
                   </div>
 
-                  <div className="space-y-2 max-h-64 overflow-y-auto">
-                    {selectedFiles.map((file, index) => (
+                  <div className="space-y-1.5 max-h-52 overflow-y-auto">
+                    {selectedFiles.map((file, idx) => (
                       <div
-                        key={`${file.name}-${index}`}
-                        className="flex items-center justify-between gap-3 p-3 rounded-lg bg-white/5"
+                        key={`${file.name}-${idx}`}
+                        className="flex items-center justify-between gap-3 p-2.5 rounded-xl bg-[#FAF9F6] border border-[#D7C9B8]/50"
                       >
-                        <div className="flex items-center gap-3 min-w-0">
-
-                          <div className="w-9 h-9 rounded-lg bg-violet-500/20 flex items-center justify-center shrink-0">
-                            <FileText
-                              size={17}
-                              className="text-violet-400"
-                            />
-                          </div>
-
-                          <div className="min-w-0">
-                            <p className="text-sm text-white truncate">
-                              {file.name}
-                            </p>
-
-                            <p className="text-xs text-gray-500 mt-1">
-                              {(file.size / 1024 / 1024).toFixed(2)} MB
-                            </p>
-                          </div>
-
+                        <div className="flex items-center gap-2.5 min-w-0">
+                          <FileText size={16} className="text-[#8B6F5A] shrink-0" />
+                          <p className="text-xs font-semibold text-[#2B241F] truncate">
+                            {file.name}
+                          </p>
                         </div>
+                        <p className="text-[11px] text-[#4A3A2E]/60 shrink-0">
+                          {(file.size / 1024 / 1024).toFixed(2)} MB
+                        </p>
                       </div>
                     ))}
                   </div>
@@ -1183,68 +1097,43 @@ const uploadFiles = async () => {
                   <button
                     onClick={uploadFiles}
                     disabled={uploadingFile}
-                    className="w-full mt-4 py-2.5 rounded-xl bg-violet-600 hover:bg-violet-700 disabled:opacity-50 text-sm font-medium"
+                    className="w-full mt-3 py-2 rounded-xl bg-[#8B6F5A] hover:bg-[#785D4A] text-[#FAF9F6] text-xs font-bold disabled:opacity-50 shadow-xs"
                   >
-                    {uploadingFile
-                      ? `Uploading ${selectedFiles.length} file${selectedFiles.length !== 1 ? "s" : ""
-                      }...`
-                      : `Upload ${selectedFiles.length} file${selectedFiles.length !== 1 ? "s" : ""
-                      }`}
+                    {uploadingFile ? "Uploading..." : `Confirm Upload (${selectedFiles.length})`}
                   </button>
-
                 </div>
               )}
 
               {files.length === 0 ? (
-                <div className="text-center py-12">
-                  <FileText
-                    size={40}
-                    className="mx-auto mb-3 text-gray-600"
-                  />
-                  <p className="text-gray-500">
-                    No shared files yet.
-                  </p>
+                <div className="text-center py-12 bg-[#EDE7DC]/30 rounded-2xl border border-dashed border-[#D7C9B8]">
+                  <FileText size={36} className="mx-auto mb-2 text-[#4A3A2E]/40" />
+                  <p className="text-xs font-bold text-[#2B241F]">No shared files yet</p>
                 </div>
               ) : (
-                <div className="space-y-3">
+                <div className="space-y-2.5">
                   {files.map((file) => (
                     <a
                       key={file._id}
                       href={getFileUrl(file.url)}
                       target="_blank"
                       rel="noreferrer"
-                      className="flex items-center justify-between gap-4 p-4 rounded-xl bg-white/5 hover:bg-white/10 border border-transparent hover:border-white/10 transition"
+                      className="flex items-center justify-between gap-4 p-3.5 rounded-xl bg-[#EDE7DC]/30 hover:bg-[#EDE7DC]/60 border border-[#D7C9B8]/70 hover:border-[#8B6F5A]/40 transition"
                     >
                       <div className="flex items-center gap-3 min-w-0">
-                        <div className="w-10 h-10 rounded-lg bg-cyan-500/10 flex items-center justify-center shrink-0">
-                          <FileText
-                            size={19}
-                            className="text-cyan-400"
-                          />
+                        <div className="w-9 h-9 rounded-xl bg-[#EDE7DC] text-[#8B6F5A] flex items-center justify-center shrink-0 border border-[#D7C9B8]">
+                          <FileText size={16} />
                         </div>
-
                         <div className="min-w-0">
-                          <p className="font-medium text-sm truncate">
+                          <p className="font-bold text-xs text-[#2B241F] truncate">
                             {file.name}
                           </p>
-
-                          <p className="text-xs text-gray-500 mt-1">
-                            Uploaded by{" "}
-                            {file.uploadedByName || "User"}
+                          <p className="text-[10px] text-[#4A3A2E]/60 mt-0.5">
+                            Uploaded by {file.uploadedByName || "User"} • {formatDate(file.createdAt)}
                           </p>
-
-                          {file.createdAt && (
-                            <p className="text-xs text-gray-600 mt-1">
-                              {formatDateTime(file.createdAt)}
-                            </p>
-                          )}
                         </div>
                       </div>
 
-                      <ExternalLink
-                        size={17}
-                        className="text-gray-500 shrink-0"
-                      />
+                      <ExternalLink size={14} className="text-[#4A3A2E]/60 shrink-0" />
                     </a>
                   ))}
                 </div>
@@ -1253,145 +1142,129 @@ const uploadFiles = async () => {
           </section>
         )}
 
-        {/* Messages */}
+        {/* =====================================================
+            TAB 5: MESSAGES
+        ===================================================== */}
         {activeTab === "messages" && (
-          <section className="mt-7 bg-[#11111f] border border-white/10 rounded-2xl overflow-hidden">
-            <div className="p-5 border-b border-white/10 flex items-center gap-3">
-              <MessageCircle
-                size={20}
-                className="text-violet-400"
-              />
+          <section className="bg-[#FAF9F6] border border-[#D7C9B8] rounded-2xl overflow-hidden shadow-xs flex flex-col h-[600px]">
+            <div className="p-4 px-6 border-b border-[#D7C9B8]/40 flex items-center gap-3">
+              <div className="p-2 rounded-xl bg-[#EDE7DC] text-[#8B6F5A] border border-[#D7C9B8]">
+                <MessageCircle size={18} />
+              </div>
               <div>
-                <h2 className="font-semibold">Messages</h2>
-                <p className="text-sm text-slate-500 mt-1">
-                  Communicate with your collaboration partner.
+                <h2 className="text-base font-extrabold text-[#2B241F] tracking-tight">
+                  Direct Messages
+                </h2>
+                <p className="text-xs text-[#4A3A2E]/60">
+                  Chatting with {collaboratorName}
                 </p>
               </div>
             </div>
 
-            <div className="h-[600px] flex flex-col">
-              <div className="flex-1 overflow-y-auto p-5 space-y-3">
-                {messages.length === 0 ? (
-                  <div className="h-full flex items-center justify-center text-center text-gray-500">
-                    <div>
-                      <MessageCircle
-                        size={40}
-                        className="mx-auto mb-3 opacity-40"
-                      />
-                      <p>No messages yet.</p>
-                      <p className="text-xs mt-1">
-                        Start the conversation.
-                      </p>
-                    </div>
+            <div className="flex-1 overflow-y-auto p-5 space-y-3 bg-[#EDE7DC]/20">
+              {messages.length === 0 ? (
+                <div className="h-full flex items-center justify-center text-center text-[#4A3A2E]/60 text-xs">
+                  <div>
+                    <MessageCircle size={36} className="mx-auto mb-2 text-[#4A3A2E]/30" />
+                    <p className="font-bold text-[#2B241F]">No messages yet</p>
+                    <p className="text-[11px] text-[#4A3A2E]/60 mt-0.5">
+                      Say hello to {collaboratorName} to start collaborating.
+                    </p>
                   </div>
-                ) : (
-                  messages.map((msg) => {
-                    const mine =
-                      String(msg.senderId) ===
-                      String(user.id);
+                </div>
+              ) : (
+                messages.map((msg) => {
+                  const mine = String(msg.senderId) === String(user.id);
 
-                    return (
+                  return (
+                    <div
+                      key={msg._id}
+                      className={`flex ${mine ? "justify-end" : "justify-start"}`}
+                    >
                       <div
-                        key={msg._id}
-                        className={`flex ${mine
-                            ? "justify-end"
-                            : "justify-start"
-                          }`}
+                        className={`max-w-[75%] px-4 py-2.5 rounded-2xl text-xs ${
+                          mine
+                            ? "bg-[#8B6F5A] text-[#FAF9F6] rounded-br-xs shadow-xs"
+                            : "bg-[#FAF9F6] text-[#2B241F] border border-[#D7C9B8] rounded-bl-xs shadow-2xs"
+                        }`}
                       >
-                        <div
-                          className={`max-w-[80%] px-4 py-3 rounded-2xl ${mine
-                              ? "bg-violet-600 rounded-br-md"
-                              : "bg-white/10 rounded-bl-md"
-                            }`}
-                        >
-                          <p className="text-xs opacity-70 mb-1">
-                            {mine ? "You" : msg.senderName || "Partner"}
-                          </p>
+                        <p className={`text-[10px] font-bold mb-0.5 ${mine ? "text-[#EDE7DC]" : "text-[#8B6F5A]"}`}>
+                          {mine ? "You" : msg.senderName || "Partner"}
+                        </p>
 
-                          <p className="text-sm whitespace-pre-wrap break-words">
-                            {msg.message}
-                          </p>
+                        <p className="whitespace-pre-wrap break-words leading-relaxed">
+                          {msg.message}
+                        </p>
 
-                          {msg.createdAt && (
-                            <p className="text-[10px] opacity-50 mt-2">
-                              {formatDateTime(msg.createdAt)}
-                            </p>
-                          )}
-                        </div>
+                        {msg.createdAt && (
+                          <p className={`text-[9px] mt-1 text-right ${mine ? "text-[#EDE7DC]/80" : "text-[#4A3A2E]/50"}`}>
+                            {formatDateTime(msg.createdAt)}
+                          </p>
+                        )}
                       </div>
-                    );
-                  })
-                )}
-              </div>
+                    </div>
+                  );
+                })
+              )}
+            </div>
 
-              <div className="p-4 border-t border-white/10 flex gap-2">
-                <textarea
-                  value={message}
-                  onChange={(event) =>
-                    setMessage(event.target.value)
-                  }
-                  onKeyDown={handleMessageKeyDown}
-                  rows={2}
-                  placeholder="Type a message..."
-                  className="flex-1 resize-none bg-white/5 border border-white/10 rounded-xl px-4 py-3 text-sm outline-none focus:border-violet-500"
-                />
+            <div className="p-3.5 border-t border-[#D7C9B8]/40 bg-[#FAF9F6] flex gap-2">
+              <textarea
+                value={message}
+                onChange={(event) => setMessage(event.target.value)}
+                onKeyDown={handleMessageKeyDown}
+                rows={1}
+                placeholder="Type your message..."
+                className="flex-1 resize-none bg-[#FAF9F6] border border-[#D7C9B8] rounded-xl px-4 py-2.5 text-xs text-[#2B241F] placeholder:text-[#4A3A2E]/40 outline-none focus:border-[#8B6F5A] focus:ring-2 focus:ring-[#8B6F5A]/15"
+              />
 
-                <button
-                  onClick={sendMessage}
-                  disabled={
-                    sendingMessage || !message.trim()
-                  }
-                  className="w-12 h-12 self-end flex items-center justify-center rounded-xl bg-violet-600 hover:bg-violet-700 disabled:opacity-40 disabled:cursor-not-allowed"
-                >
-                  <Send size={18} />
-                </button>
-              </div>
+              <button
+                onClick={sendMessage}
+                disabled={sendingMessage || !message.trim()}
+                className="w-10 h-10 flex items-center justify-center rounded-xl bg-[#8B6F5A] hover:bg-[#785D4A] text-[#FAF9F6] disabled:opacity-40 shadow-xs"
+              >
+                <Send size={15} />
+              </button>
             </div>
           </section>
         )}
 
-        {/* Activity */}
+        {/* =====================================================
+            TAB 6: ACTIVITY
+        ===================================================== */}
         {activeTab === "activity" && (
-          <section className="mt-7 bg-[#11111f] border border-white/10 rounded-2xl overflow-hidden">
-            <div className="p-5 border-b border-white/10 flex items-center gap-3">
-              <Clock
-                size={20}
-                className="text-cyan-400"
-              />
+          <section className="bg-[#FAF9F6] border border-[#D7C9B8] rounded-2xl overflow-hidden shadow-xs">
+            <div className="p-5 border-b border-[#D7C9B8]/40 flex items-center gap-3">
+              <div className="p-2 rounded-xl bg-[#EDE7DC] text-[#8B6F5A] border border-[#D7C9B8]">
+                <Clock size={18} />
+              </div>
               <div>
-                <h2 className="font-semibold">
-                  Collaboration Activity
+                <h2 className="text-base font-extrabold text-[#2B241F] tracking-tight">
+                  Collaboration Activity Timeline
                 </h2>
-                <p className="text-sm text-slate-500 mt-1">
-                  Recent workspace events.
+                <p className="text-xs text-[#4A3A2E]/60">
+                  Recent workspace events and updates.
                 </p>
               </div>
             </div>
 
-            <div className="p-5">
+            <div className="p-6">
               {activity.length === 0 ? (
-                <p className="text-center text-gray-500 text-sm py-10">
-                  No activity yet.
+                <p className="text-center text-[#4A3A2E]/60 text-xs py-10">
+                  No activity events recorded yet.
                 </p>
               ) : (
-                <div className="space-y-5">
+                <div className="space-y-4">
                   {activity
                     .slice()
                     .reverse()
                     .map((item) => (
-                      <div
-                        key={item._id}
-                        className="flex gap-4"
-                      >
-                        <div className="w-2.5 h-2.5 rounded-full bg-violet-400 mt-1.5 shrink-0" />
-
+                      <div key={item._id} className="flex gap-3 text-xs">
+                        <div className="w-2 h-2 rounded-full bg-[#8B6F5A] mt-1.5 shrink-0" />
                         <div>
-                          <p className="text-sm text-gray-300">
-                            {item.text}
-                          </p>
-
+                          <p className="font-medium text-[#2B241F]">{item.text}</p>
                           {item.createdAt && (
-                            <p className="text-xs text-gray-600 mt-1">
+                            <p className="text-[10px] text-[#4A3A2E]/50 mt-0.5">
                               {formatDateTime(item.createdAt)}
                             </p>
                           )}
@@ -1405,144 +1278,139 @@ const uploadFiles = async () => {
         )}
       </main>
 
-      {/* Add Task Modal */}
+      {/* =====================================================
+          ADD TASK MODAL
+      ===================================================== */}
       {showTaskModal && (
-        <div className="fixed inset-0 z-50 bg-black/70 backdrop-blur-sm flex items-center justify-center px-4">
-          <div className="w-full max-w-lg bg-[#11111f] border border-white/10 rounded-2xl p-6 shadow-2xl">
-            <div className="flex items-center justify-between mb-6">
+        <div className="fixed inset-0 z-50 bg-[#2B241F]/40 backdrop-blur-xs flex items-center justify-center px-4">
+          <div className="w-full max-w-md bg-[#FAF9F6] border border-[#D7C9B8] rounded-3xl p-6 shadow-xl">
+            <div className="flex items-center justify-between mb-5">
               <div>
-                <h2 className="text-lg font-semibold">
-                  Add Task
+                <h2 className="text-base font-extrabold text-[#2B241F]">
+                  Create Collaboration Task
                 </h2>
-                <p className="text-sm text-gray-500 mt-1">
-                  Create a shared collaboration task.
+                <p className="text-xs text-[#4A3A2E]/60 mt-0.5">
+                  Add a milestone or action item for this campaign.
                 </p>
               </div>
 
               <button
                 onClick={() => setShowTaskModal(false)}
-                className="p-2 hover:bg-white/10 rounded-lg"
+                className="p-1.5 rounded-xl text-[#4A3A2E]/60 hover:bg-[#EDE7DC] hover:text-[#2B241F]"
               >
-                <X size={18} />
+                <X size={16} />
               </button>
             </div>
 
-            <div className="space-y-4">
+            <div className="space-y-3.5 text-xs">
               <div>
-                <label className="text-sm text-gray-400">
-                  Task title
+                <label className="font-bold text-[#2B241F] block mb-1">
+                  Task Title *
                 </label>
                 <input
                   value={taskTitle}
-                  onChange={(event) =>
-                    setTaskTitle(event.target.value)
-                  }
-                  className="w-full mt-2 bg-white/5 border border-white/10 rounded-xl px-4 py-3 outline-none focus:border-violet-500"
-                  placeholder="Example: Create campaign reel"
+                  onChange={(e) => setTaskTitle(e.target.value)}
+                  className="w-full bg-[#FAF9F6] border border-[#D7C9B8] rounded-xl px-3.5 py-2.5 outline-none focus:border-[#8B6F5A] text-xs text-[#2B241F]"
+                  placeholder="e.g. Draft Instagram Reel script"
                 />
               </div>
 
               <div>
-                <label className="text-sm text-gray-400">
+                <label className="font-bold text-[#2B241F] block mb-1">
                   Description
                 </label>
                 <textarea
                   value={taskDescription}
-                  onChange={(event) =>
-                    setTaskDescription(event.target.value)
-                  }
-                  rows={4}
-                  className="w-full mt-2 bg-white/5 border border-white/10 rounded-xl px-4 py-3 outline-none focus:border-violet-500 resize-none"
-                  placeholder="Enter task details..."
+                  onChange={(e) => setTaskDescription(e.target.value)}
+                  rows={3}
+                  className="w-full bg-[#FAF9F6] border border-[#D7C9B8] rounded-xl p-3 outline-none focus:border-[#8B6F5A] text-xs text-[#2B241F] resize-none"
+                  placeholder="Task details and deliverables notes..."
                 />
               </div>
 
               <div>
-                <label className="text-sm text-gray-400">
-                  Due date
+                <label className="font-bold text-[#2B241F] block mb-1">
+                  Due Date
                 </label>
                 <input
                   type="date"
                   value={taskDueDate}
-                  onChange={(event) =>
-                    setTaskDueDate(event.target.value)
-                  }
-                  className="w-full mt-2 bg-white/5 border border-white/10 rounded-xl px-4 py-3 outline-none focus:border-violet-500"
+                  onChange={(e) => setTaskDueDate(e.target.value)}
+                  className="w-full bg-[#FAF9F6] border border-[#D7C9B8] rounded-xl px-3.5 py-2 outline-none focus:border-[#8B6F5A] text-xs text-[#2B241F]"
                 />
               </div>
 
-              <button
-                onClick={addTask}
-                disabled={addingTask}
-                className="w-full py-3 rounded-xl bg-violet-600 hover:bg-violet-700 disabled:opacity-50 font-medium transition"
-              >
-                {addingTask
-                  ? "Creating..."
-                  : "Create Task"}
-              </button>
+              <div className="flex justify-end gap-2 pt-3 border-t border-[#D7C9B8]/40">
+                <button
+                  onClick={() => setShowTaskModal(false)}
+                  className="px-4 py-2 rounded-xl border border-[#D7C9B8] text-[#4A3A2E] font-bold hover:bg-[#EDE7DC]"
+                >
+                  Cancel
+                </button>
+
+                <button
+                  onClick={addTask}
+                  disabled={addingTask}
+                  className="px-5 py-2 rounded-xl bg-[#8B6F5A] hover:bg-[#785D4A] text-[#FAF9F6] font-bold disabled:opacity-50 shadow-xs"
+                >
+                  {addingTask ? "Creating..." : "Create Task"}
+                </button>
+              </div>
             </div>
           </div>
         </div>
       )}
 
-      {/* Brand Content Review Modal */}
+      {/* =====================================================
+          BRAND CONTENT REVIEW MODAL
+      ===================================================== */}
       {selectedSubmission && isBrand && (
-        <div className="fixed inset-0 z-[60] bg-black/80 backdrop-blur-sm flex items-center justify-center px-4 py-6">
-          <div className="w-full max-w-3xl max-h-[90vh] overflow-y-auto bg-[#11111f] border border-white/10 rounded-2xl shadow-2xl">
-            <div className="sticky top-0 z-10 bg-[#11111f] border-b border-white/10 px-6 py-5 flex items-center justify-between gap-4">
+        <div className="fixed inset-0 z-[60] bg-[#2B241F]/40 backdrop-blur-xs flex items-center justify-center px-4 py-6">
+          <div className="w-full max-w-2xl max-h-[90vh] overflow-y-auto bg-[#FAF9F6] border border-[#D7C9B8] rounded-3xl shadow-xl">
+            <div className="sticky top-0 z-10 bg-[#FAF9F6]/95 backdrop-blur-md border-b border-[#D7C9B8]/40 px-6 py-4 flex items-center justify-between gap-4">
               <div className="min-w-0">
-                <h2 className="text-lg font-semibold truncate">
-                  {selectedSubmission.title ||
-                    "Content Review"}
+                <h2 className="text-base font-extrabold text-[#2B241F] truncate">
+                  {selectedSubmission.title || "Content Review"}
                 </h2>
-                <p className="text-sm text-slate-500 mt-1">
-                  Review creator submission and confirm whether
-                  it is ready.
+                <p className="text-xs text-[#4A3A2E]/60 mt-0.5">
+                  Review deliverable submission and confirm approval.
                 </p>
               </div>
 
               <button
                 onClick={closeContentReview}
                 disabled={reviewLoading}
-                className="p-2 rounded-lg hover:bg-white/10 disabled:opacity-40"
+                className="p-1.5 rounded-xl text-[#4A3A2E]/60 hover:bg-[#EDE7DC] hover:text-[#2B241F]"
               >
-                <X size={19} />
+                <X size={16} />
               </button>
             </div>
 
-            <div className="p-6 space-y-5">
-              <div className="grid sm:grid-cols-3 gap-3">
-                <div className="rounded-xl bg-white/5 border border-white/10 p-4">
-                  <p className="text-xs text-slate-500">
-                    Platform
-                  </p>
-                  <p className="text-sm font-medium mt-1">
+            <div className="p-6 space-y-4 text-xs">
+              <div className="grid sm:grid-cols-3 gap-2.5">
+                <div className="rounded-xl bg-[#EDE7DC]/40 border border-[#D7C9B8] p-3">
+                  <p className="text-[10px] uppercase font-bold text-[#4A3A2E]/60">Platform</p>
+                  <p className="text-xs font-bold text-[#2B241F] mt-0.5">
                     {selectedSubmission.platform || "—"}
                   </p>
                 </div>
 
-                <div className="rounded-xl bg-white/5 border border-white/10 p-4">
-                  <p className="text-xs text-slate-500">
-                    Content Type
-                  </p>
-                  <p className="text-sm font-medium mt-1">
+                <div className="rounded-xl bg-[#EDE7DC]/40 border border-[#D7C9B8] p-3">
+                  <p className="text-[10px] uppercase font-bold text-[#4A3A2E]/60">Content Type</p>
+                  <p className="text-xs font-bold text-[#2B241F] mt-0.5">
                     {selectedSubmission.contentType || "—"}
                   </p>
                 </div>
 
-                <div className="rounded-xl bg-white/5 border border-white/10 p-4">
-                  <p className="text-xs text-slate-500">
-                    Status
-                  </p>
+                <div className="rounded-xl bg-[#EDE7DC]/40 border border-[#D7C9B8] p-3">
+                  <p className="text-[10px] uppercase font-bold text-[#4A3A2E]/60">Status</p>
                   <span
-                    className={`inline-flex mt-1 rounded-full border px-2.5 py-1 text-[11px] font-medium ${contentStatusStyles[
-                      selectedSubmission.status
-                      ] || contentStatusStyles.submitted
-                      }`}
+                    className={`inline-flex mt-1 rounded-full border px-2 py-0.2 text-[10px] font-bold ${
+                      contentStatusStyles[selectedSubmission.status] ||
+                      contentStatusStyles.submitted
+                    }`}
                   >
-                    {contentStatusLabels[
-                      selectedSubmission.status
-                    ] ||
+                    {contentStatusLabels[selectedSubmission.status] ||
                       selectedSubmission.status ||
                       "Submitted"}
                   </span>
@@ -1550,66 +1418,41 @@ const uploadFiles = async () => {
               </div>
 
               {selectedSubmission.fileUrl && (
-                <div className="rounded-2xl border border-white/10 bg-white/[0.025] p-5">
-                  <div className="flex items-center justify-between gap-3 mb-4">
+                <div className="rounded-xl border border-[#D7C9B8] bg-[#EDE7DC]/20 p-4">
+                  <div className="flex items-center justify-between gap-3 mb-3">
                     <div className="flex items-center gap-2">
-                      <FileText
-                        size={18}
-                        className="text-cyan-400"
-                      />
-                      <h3 className="font-medium">
-                        Submitted File
-                      </h3>
+                      <FileText size={16} className="text-[#8B6F5A]" />
+                      <h3 className="font-bold text-xs text-[#2B241F]">Submitted Media</h3>
                     </div>
 
                     <a
-                      href={getFileUrl(
-                        selectedSubmission.fileUrl
-                      )}
+                      href={getFileUrl(selectedSubmission.fileUrl)}
                       target="_blank"
                       rel="noreferrer"
-                      className="flex items-center gap-2 text-sm text-cyan-300 hover:text-cyan-200"
+                      className="flex items-center gap-1 text-xs text-[#8B6F5A] font-bold hover:underline"
                     >
-                      Open Full File
-                      <ExternalLink size={15} />
+                      Open Full Asset <ExternalLink size={12} />
                     </a>
                   </div>
 
-                  <div className="rounded-xl overflow-hidden bg-black/30 border border-white/5">
-                    {String(
-                      selectedSubmission.fileUrl
-                    ).match(
-                      /\.(jpg|jpeg|png|gif|webp)$/i
-                    ) ? (
+                  <div className="rounded-xl overflow-hidden bg-[#FAF9F6] border border-[#D7C9B8] p-2">
+                    {String(selectedSubmission.fileUrl).match(/\.(jpg|jpeg|png|gif|webp)$/i) ? (
                       <img
-                        src={getFileUrl(
-                          selectedSubmission.fileUrl
-                        )}
-                        alt={
-                          selectedSubmission.title ||
-                          "Submitted content"
-                        }
-                        className="max-h-[420px] w-full object-contain"
+                        src={getFileUrl(selectedSubmission.fileUrl)}
+                        alt={selectedSubmission.title || "Submitted content"}
+                        className="max-h-[300px] w-full object-contain mx-auto rounded-lg"
                       />
                     ) : (
-                      <div className="py-12 text-center">
-                        <FileText
-                          size={45}
-                          className="mx-auto mb-3 text-slate-600"
-                        />
-                        <p className="text-sm text-slate-400">
-                          File submitted for review
-                        </p>
+                      <div className="py-8 text-center">
+                        <FileText size={36} className="mx-auto mb-2 text-[#4A3A2E]/40" />
+                        <p className="text-xs text-[#4A3A2E]/70">File uploaded for review</p>
                         <a
-                          href={getFileUrl(
-                            selectedSubmission.fileUrl
-                          )}
+                          href={getFileUrl(selectedSubmission.fileUrl)}
                           target="_blank"
                           rel="noreferrer"
-                          className="inline-flex items-center gap-2 mt-4 rounded-xl bg-white/10 px-4 py-2 text-sm hover:bg-white/15"
+                          className="inline-flex items-center gap-1.5 mt-3 rounded-xl bg-[#EDE7DC] border border-[#D7C9B8] px-3.5 py-1.5 text-xs font-bold text-[#2B241F] hover:bg-[#D7C9B8]"
                         >
-                          View File
-                          <ExternalLink size={15} />
+                          View File <ExternalLink size={12} />
                         </a>
                       </div>
                     )}
@@ -1618,132 +1461,79 @@ const uploadFiles = async () => {
               )}
 
               {selectedSubmission.liveUrl && (
-                <div className="rounded-xl border border-cyan-500/20 bg-cyan-500/5 p-4">
-                  <p className="text-xs text-cyan-300 font-medium">
-                    Live Content URL
-                  </p>
+                <div className="rounded-xl border border-[#D7C9B8] bg-[#EDE7DC]/40 p-3.5">
+                  <p className="text-xs text-[#2B241F] font-bold">Live Post URL</p>
                   <a
                     href={selectedSubmission.liveUrl}
                     target="_blank"
                     rel="noreferrer"
-                    className="mt-2 flex items-center gap-2 text-sm text-cyan-200 break-all hover:underline"
+                    className="mt-1 flex items-center gap-1.5 text-xs text-[#8B6F5A] break-all font-semibold hover:underline"
                   >
                     {selectedSubmission.liveUrl}
-                    <ExternalLink
-                      size={14}
-                      className="shrink-0"
-                    />
+                    <ExternalLink size={12} className="shrink-0" />
                   </a>
                 </div>
               )}
 
               {selectedSubmission.caption && (
                 <div>
-                  <p className="text-xs text-slate-500">
-                    Caption
-                  </p>
-                  <p className="text-sm text-slate-300 mt-2 whitespace-pre-wrap">
+                  <p className="text-[10px] uppercase font-bold text-[#4A3A2E]/60">Caption</p>
+                  <p className="text-xs text-[#4A3A2E] mt-1 whitespace-pre-wrap bg-[#EDE7DC]/30 p-3 rounded-xl border border-[#D7C9B8]/50">
                     {selectedSubmission.caption}
                   </p>
                 </div>
               )}
 
-              {selectedSubmission.description && (
-                <div>
-                  <p className="text-xs text-slate-500">
-                    Creator Description
-                  </p>
-                  <p className="text-sm text-slate-300 mt-2 whitespace-pre-wrap">
-                    {selectedSubmission.description}
-                  </p>
-                </div>
-              )}
-
               <div>
-                <label className="text-sm text-slate-400">
-                  Brand Feedback
+                <label className="text-xs font-bold text-[#2B241F] block mb-1">
+                  Brand Review Feedback
                 </label>
-
                 <textarea
                   value={reviewFeedback}
-                  onChange={(event) =>
-                    setReviewFeedback(event.target.value)
-                  }
-                  rows={5}
-                  placeholder="Write feedback for the creator. Required when requesting changes or rejecting."
+                  onChange={(e) => setReviewFeedback(e.target.value)}
+                  rows={4}
+                  placeholder="Provide constructive feedback for the creator..."
                   disabled={
                     reviewLoading ||
-                    !["submitted", "under_review"].includes(
-                      selectedSubmission.status
-                    )
+                    !["submitted", "under_review"].includes(selectedSubmission.status)
                   }
-                  className="w-full mt-2 resize-none bg-white/5 border border-white/10 rounded-xl px-4 py-3 text-sm outline-none focus:border-violet-500 disabled:opacity-50"
+                  className="w-full resize-none bg-[#FAF9F6] border border-[#D7C9B8] rounded-xl p-3 text-xs text-[#2B241F] placeholder:text-[#4A3A2E]/40 outline-none focus:border-[#8B6F5A] disabled:opacity-50"
                 />
               </div>
 
-              {selectedSubmission.feedback &&
-                !["submitted", "under_review"].includes(
-                  selectedSubmission.status
-                ) && (
-                  <div className="rounded-xl border border-orange-500/20 bg-orange-500/5 p-4">
-                    <p className="text-xs font-medium text-orange-300">
-                      Review Feedback
-                    </p>
-                    <p className="text-sm text-slate-300 mt-2 whitespace-pre-wrap">
-                      {selectedSubmission.feedback}
-                    </p>
-                  </div>
-                )}
-
-              {["submitted", "under_review"].includes(
-                selectedSubmission.status
-              ) ? (
-                <div className="grid sm:grid-cols-3 gap-3 pt-2">
+              {["submitted", "under_review"].includes(selectedSubmission.status) ? (
+                <div className="grid sm:grid-cols-3 gap-2.5 pt-2">
                   <button
-                    onClick={() =>
-                      reviewSubmission("approved")
-                    }
+                    onClick={() => reviewSubmission("approved")}
                     disabled={reviewLoading}
-                    className="flex items-center justify-center gap-2 rounded-xl bg-emerald-600 hover:bg-emerald-500 disabled:opacity-50 px-4 py-3 text-sm font-semibold"
+                    className="flex items-center justify-center gap-1.5 rounded-xl bg-[#8B6F5A] hover:bg-[#785D4A] disabled:opacity-50 px-3.5 py-2.5 text-xs font-bold text-[#FAF9F6] shadow-xs"
                   >
-                    <Check size={17} />
+                    <Check size={14} />
                     Approve Content
                   </button>
 
                   <button
-                    onClick={() =>
-                      reviewSubmission("changes_requested")
-                    }
+                    onClick={() => reviewSubmission("changes_requested")}
                     disabled={reviewLoading}
-                    className="flex items-center justify-center gap-2 rounded-xl bg-orange-600 hover:bg-orange-500 disabled:opacity-50 px-4 py-3 text-sm font-semibold"
+                    className="flex items-center justify-center gap-1.5 rounded-xl bg-[#C98B6B] hover:bg-[#B3785A] disabled:opacity-50 px-3.5 py-2.5 text-xs font-bold text-[#FAF9F6] shadow-xs"
                   >
-                    <RotateCcw size={17} />
+                    <RotateCcw size={14} />
                     Request Changes
                   </button>
 
                   <button
-                    onClick={() =>
-                      reviewSubmission("rejected")
-                    }
+                    onClick={() => reviewSubmission("rejected")}
                     disabled={reviewLoading}
-                    className="flex items-center justify-center gap-2 rounded-xl bg-red-600 hover:bg-red-500 disabled:opacity-50 px-4 py-3 text-sm font-semibold"
+                    className="flex items-center justify-center gap-1.5 rounded-xl bg-rose-600 hover:bg-rose-700 disabled:opacity-50 px-3.5 py-2.5 text-xs font-bold text-white shadow-xs"
                   >
-                    <XCircle size={17} />
+                    <XCircle size={14} />
                     Reject
                   </button>
                 </div>
               ) : (
-                <div className="rounded-xl bg-white/5 border border-white/10 p-4 text-center">
-                  <p className="text-sm text-slate-400">
-                    This submission has already been reviewed.
-                  </p>
+                <div className="rounded-xl bg-[#EDE7DC]/40 border border-[#D7C9B8] p-3 text-center text-xs text-[#4A3A2E] font-semibold">
+                  This deliverable submission has already been reviewed.
                 </div>
-              )}
-
-              {reviewLoading && (
-                <p className="text-center text-xs text-slate-500">
-                  Updating submission...
-                </p>
               )}
             </div>
           </div>

@@ -1,6 +1,5 @@
 import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
-
 import axios from "axios";
 
 import {
@@ -11,10 +10,10 @@ import {
   FileText,
   MapPin,
   Users,
-//   Instagram,
   CheckCircle,
   Save,
   Send,
+  Sparkles,
 } from "lucide-react";
 
 import authService from "../../services/authService";
@@ -38,11 +37,11 @@ const CreateCampaign = () => {
     creatorsNeeded: "1",
     deliverables: "",
     requirements: "",
-    location: user?.country || user?.location || "USA",
+    location: user?.country || user?.location || "India",
   });
 
   // Dynamically derive currency from user's country or chosen location
-  const activeCountry = formData.location || user?.country || user?.location || "USA";
+  const activeCountry = formData.location || user?.country || user?.location || "India";
   const brandCurrency = getCurrencyFromCountry(activeCountry);
 
   const [error, setError] = useState("");
@@ -165,93 +164,85 @@ const CreateCampaign = () => {
   };
 
   const handleSubmit = async (status) => {
-  setError("");
-  setSuccess("");
+    setError("");
+    setSuccess("");
 
-  const validationError = validateForm();
+    const validationError = validateForm();
 
-  if (validationError) {
-    setError(validationError);
-    return;
-  }
-
-  setSaving(true);
-
-  try {
-    const campaignData = {
-      ...formData,
-      status,
-      brandId: user.id,
-      brandName: user.companyName || user.name,
-      budget: Number(formData.budget),
-      currency: brandCurrency.code,
-      creatorsNeeded: Number(formData.creatorsNeeded),
-    };
-
-    console.log("Sending campaign:", campaignData);
-
-    const response = await axios.post(
-      "http://localhost:5000/api/campaigns",
-      campaignData
-    );
-
-    console.log(
-      "Campaign created:",
-      response.data
-    );
-
-    setSuccess(response.data.message);
-
-    // Clear form after successful publish
-    if (status === "published") {
-      setFormData({
-        title: "",
-        description: "",
-        category: "Fashion",
-        campaignType: "Paid Collaboration",
-        platforms: [],
-        budget: "",
-        startDate: "",
-        endDate: "",
-        applicationDeadline: "",
-        creatorsNeeded: "1",
-        deliverables: "",
-        requirements: "",
-        location: user?.country || user?.location || "USA",
-      });
+    if (validationError) {
+      setError(validationError);
+      return;
     }
-  } catch (error) {
-    console.error(
-      "Campaign creation error:",
-      error
-    );
 
-    setError(
-      error.response?.data?.message ||
-        "Failed to create campaign. Please try again."
-    );
-  } finally {
-    setSaving(false);
-  }
-};
+    setSaving(true);
+
+    try {
+      const campaignData = {
+        ...formData,
+        status,
+        brandId: user.id,
+        brandName: user.companyName || user.name,
+        budget: Number(formData.budget),
+        currency: brandCurrency.code,
+        creatorsNeeded: Number(formData.creatorsNeeded),
+      };
+
+      const response = await axios.post(
+        "http://localhost:5000/api/campaigns",
+        campaignData
+      );
+
+      setSuccess(response.data.message || "Campaign created successfully!");
+
+      // Clear form after successful publish
+      if (status === "published") {
+        setFormData({
+          title: "",
+          description: "",
+          category: "Fashion",
+          campaignType: "Paid Collaboration",
+          platforms: [],
+          budget: "",
+          startDate: "",
+          endDate: "",
+          applicationDeadline: "",
+          creatorsNeeded: "1",
+          deliverables: "",
+          requirements: "",
+          location: user?.country || user?.location || "India",
+        });
+      }
+    } catch (error) {
+      console.error("Campaign creation error:", error);
+
+      setError(
+        error.response?.data?.message ||
+          "Failed to create campaign. Please try again."
+      );
+    } finally {
+      setSaving(false);
+    }
+  };
 
   if (!user) {
     return (
-      <div className="min-h-screen bg-[#070b14] text-white flex items-center justify-center">
-        <div className="text-center">
-          <div className="text-5xl mb-5">🔒</div>
+      <div className="min-h-screen bg-[#FAF9F6] text-[#2B241F] flex items-center justify-center px-6">
+        <div className="text-center max-w-sm bg-[#FAF9F6] p-8 rounded-2xl border border-[#D7C9B8] shadow-xs">
+          <div className="w-16 h-16 mx-auto rounded-xl bg-[#EDE7DC] border border-[#D7C9B8] flex items-center justify-center text-[#8B6F5A] text-2xl">
+            🔒
+          </div>
 
-          <h1 className="text-2xl font-bold">
-            Please Login
+          <h1 className="text-2xl font-bold mt-5 text-[#2B241F]">
+            Please Sign In
           </h1>
 
-          <p className="text-gray-400 mt-2">
+          <p className="text-[#4A3A2E]/75 text-sm mt-2">
             You need to login as a brand to create a campaign.
           </p>
 
           <button
             onClick={() => navigate("/login")}
-            className="mt-6 bg-violet-600 hover:bg-violet-700 px-6 py-3 rounded-xl font-semibold transition"
+            className="mt-6 w-full bg-[#8B6F5A] hover:bg-[#785D4A] text-white py-3 rounded-xl font-semibold shadow-xs transition"
           >
             Go to Login
           </button>
@@ -261,103 +252,99 @@ const CreateCampaign = () => {
   }
 
   return (
-    <div className="min-h-screen bg-[#070b14] text-white">
-      <main className="max-w-6xl mx-auto px-6 py-10">
-
+    <div className="min-h-screen bg-[#FAF9F6] text-[#2B241F]">
+      <main className="max-w-5xl mx-auto px-6 py-10">
         {/* Back Button */}
         <button
           onClick={() => navigate("/brand/dashboard")}
-          className="flex items-center gap-2 text-gray-400 hover:text-white transition mb-8"
+          className="flex items-center gap-2 text-[#4A3A2E]/70 hover:text-[#2B241F] font-semibold text-sm transition mb-6"
         >
           <ArrowLeft size={18} />
           Back to Dashboard
         </button>
 
         {/* Page Header */}
-        <div className="mb-8">
-          <div className="flex items-center gap-3">
-            <div className="w-12 h-12 rounded-xl bg-violet-500/10 border border-violet-500/20 flex items-center justify-center">
-              <Briefcase
-                size={24}
-                className="text-violet-400"
-              />
+        <div className="mb-8 flex flex-col md:flex-row md:items-center md:justify-between gap-4">
+          <div className="flex items-center gap-4">
+            <div className="w-12 h-12 rounded-xl bg-[#EDE7DC] border border-[#D7C9B8] flex items-center justify-center text-[#8B6F5A] shadow-xs">
+              <Briefcase size={22} />
             </div>
 
             <div>
-              <h1 className="text-3xl font-bold">
+              <h1 className="text-3xl font-black text-[#2B241F]">
                 Create Campaign
               </h1>
 
-              <p className="text-gray-400 mt-1">
-                Find the perfect creators for your brand.
+              <p className="text-[#4A3A2E]/70 text-sm mt-0.5">
+                Launch a new campaign and recruit targeted creator talent.
               </p>
             </div>
           </div>
         </div>
 
-        {/* Brand Information */}
-        <section className="rounded-2xl border border-white/10 bg-white/[0.03] p-6 mb-6">
+        {/* Brand Information Header Card */}
+        <section className="rounded-2xl border border-[#D7C9B8] bg-[#FAF9F6] p-6 mb-6 shadow-xs">
           <div className="flex items-center gap-4">
-
-            <div className="w-14 h-14 rounded-full bg-gradient-to-br from-violet-500 to-cyan-400 flex items-center justify-center text-xl font-bold">
+            <div className="w-14 h-14 rounded-xl bg-[#EDE7DC] border border-[#D7C9B8] flex items-center justify-center text-[#8B6F5A] text-lg font-black shadow-xs">
               {(user.companyName || user.name || "BR")
                 .substring(0, 2)
                 .toUpperCase()}
             </div>
 
             <div>
-              <p className="text-sm text-gray-500">
-                Creating campaign for
+              <p className="text-xs font-semibold text-[#4A3A2E]/70 uppercase tracking-wider">
+                Creating Campaign As
               </p>
 
-              <h2 className="text-lg font-semibold">
+              <h2 className="text-lg font-bold text-[#2B241F]">
                 {user.companyName || user.name}
               </h2>
 
-              <p className="text-sm text-violet-400">
+              <p className="text-xs font-semibold text-[#8B6F5A] mt-0.5">
                 {user.email}
               </p>
             </div>
           </div>
         </section>
 
-        {/* Error */}
+        {/* Error Alert */}
         {error && (
-          <div className="mb-6 p-4 rounded-xl bg-red-500/10 border border-red-500/30 text-red-300">
-            {error}
+          <div className="mb-6 p-4 rounded-xl bg-[#C98B6B]/15 border border-[#C98B6B]/40 text-[#C98B6B] text-sm font-semibold flex items-center gap-2">
+            <span>⚠️ {error}</span>
           </div>
         )}
 
-        {/* Success */}
+        {/* Success Alert */}
         {success && (
-          <div className="mb-6 p-4 rounded-xl bg-green-500/10 border border-green-500/30 text-green-300 flex items-center gap-3">
-            <CheckCircle size={20} />
-            {success}
+          <div className="mb-6 p-4 rounded-xl bg-[#EDE7DC] border border-[#D7C9B8] text-[#2B241F] text-sm font-semibold flex items-center gap-3">
+            <CheckCircle size={20} className="text-[#8B6F5A] shrink-0" />
+            <span>{success}</span>
           </div>
         )}
 
         {/* Campaign Form */}
         <div className="space-y-6">
-
           {/* Basic Information */}
-          <section className="rounded-2xl border border-white/10 bg-white/[0.03] p-6">
-
+          <section className="rounded-2xl border border-[#D7C9B8] bg-[#FAF9F6] p-6 md:p-8 shadow-xs">
             <div className="flex items-center gap-3 mb-6">
-              <FileText
-                size={21}
-                className="text-violet-400"
-              />
+              <div className="p-2 rounded-xl bg-[#EDE7DC] text-[#8B6F5A] border border-[#D7C9B8]">
+                <FileText size={20} />
+              </div>
 
-              <h2 className="text-xl font-semibold">
-                Campaign Information
-              </h2>
+              <div>
+                <h2 className="text-lg font-bold text-[#2B241F]">
+                  Campaign Information
+                </h2>
+                <p className="text-xs text-[#4A3A2E]/70">
+                  Core details and category of your campaign
+                </p>
+              </div>
             </div>
 
             <div className="space-y-5">
-
               {/* Campaign Title */}
               <div>
-                <label className="block text-sm text-gray-300 mb-2">
+                <label className="block text-xs font-bold text-[#4A3A2E] uppercase tracking-wider mb-2">
                   Campaign Title *
                 </label>
 
@@ -366,14 +353,14 @@ const CreateCampaign = () => {
                   name="title"
                   value={formData.title}
                   onChange={handleChange}
-                  placeholder="Example: Summer Fashion Collection"
-                  className="w-full bg-[#111827] border border-white/10 rounded-xl px-4 py-3 text-white outline-none focus:border-violet-500 transition"
+                  placeholder="e.g. Summer Glow Skincare Launch 2026"
+                  className="w-full bg-[#FAF9F6] border border-[#D7C9B8] rounded-xl px-4 py-3 text-[#2B241F] placeholder:text-[#4A3A2E]/40 outline-none focus:border-[#8B6F5A] focus:ring-2 focus:ring-[#8B6F5A]/15 transition text-sm font-medium"
                 />
               </div>
 
               {/* Description */}
               <div>
-                <label className="block text-sm text-gray-300 mb-2">
+                <label className="block text-xs font-bold text-[#4A3A2E] uppercase tracking-wider mb-2">
                   Campaign Description *
                 </label>
 
@@ -381,17 +368,16 @@ const CreateCampaign = () => {
                   name="description"
                   value={formData.description}
                   onChange={handleChange}
-                  rows="5"
-                  placeholder="Describe your campaign, goals and what you want creators to promote..."
-                  className="w-full bg-[#111827] border border-white/10 rounded-xl px-4 py-3 text-white outline-none focus:border-violet-500 transition resize-none"
+                  rows="4"
+                  placeholder="Describe your campaign goals, key selling points, and what creator content should highlight..."
+                  className="w-full bg-[#FAF9F6] border border-[#D7C9B8] rounded-xl px-4 py-3 text-[#2B241F] placeholder:text-[#4A3A2E]/40 outline-none focus:border-[#8B6F5A] focus:ring-2 focus:ring-[#8B6F5A]/15 transition text-sm font-medium resize-none"
                 />
               </div>
 
               {/* Category + Type */}
               <div className="grid md:grid-cols-2 gap-5">
-
                 <div>
-                  <label className="block text-sm text-gray-300 mb-2">
+                  <label className="block text-xs font-bold text-[#4A3A2E] uppercase tracking-wider mb-2">
                     Category *
                   </label>
 
@@ -399,13 +385,10 @@ const CreateCampaign = () => {
                     name="category"
                     value={formData.category}
                     onChange={handleChange}
-                    className="w-full bg-[#111827] border border-white/10 rounded-xl px-4 py-3 text-white outline-none focus:border-violet-500"
+                    className="w-full bg-[#FAF9F6] border border-[#D7C9B8] rounded-xl px-4 py-3 text-[#2B241F] outline-none focus:border-[#8B6F5A] focus:ring-2 focus:ring-[#8B6F5A]/15 transition text-sm font-medium"
                   >
                     {categoryOptions.map((category) => (
-                      <option
-                        key={category}
-                        value={category}
-                      >
+                      <option key={category} value={category}>
                         {category}
                       </option>
                     ))}
@@ -413,7 +396,7 @@ const CreateCampaign = () => {
                 </div>
 
                 <div>
-                  <label className="block text-sm text-gray-300 mb-2">
+                  <label className="block text-xs font-bold text-[#4A3A2E] uppercase tracking-wider mb-2">
                     Campaign Type *
                   </label>
 
@@ -421,98 +404,87 @@ const CreateCampaign = () => {
                     name="campaignType"
                     value={formData.campaignType}
                     onChange={handleChange}
-                    className="w-full bg-[#111827] border border-white/10 rounded-xl px-4 py-3 text-white outline-none focus:border-violet-500"
+                    className="w-full bg-[#FAF9F6] border border-[#D7C9B8] rounded-xl px-4 py-3 text-[#2B241F] outline-none focus:border-[#8B6F5A] focus:ring-2 focus:ring-[#8B6F5A]/15 transition text-sm font-medium"
                   >
                     {campaignTypes.map((type) => (
-                      <option
-                        key={type}
-                        value={type}
-                      >
+                      <option key={type} value={type}>
                         {type}
                       </option>
                     ))}
                   </select>
                 </div>
-
               </div>
-
             </div>
           </section>
 
           {/* Social Platforms */}
-          <section className="rounded-2xl border border-white/10 bg-white/[0.03] p-6">
+          <section className="rounded-2xl border border-[#D7C9B8] bg-[#FAF9F6] p-6 md:p-8 shadow-xs">
+            <div className="flex items-center gap-3 mb-4">
+              <div className="p-2 rounded-xl bg-[#EDE7DC] text-[#8B6F5A] border border-[#D7C9B8]">
+                <Sparkles size={20} />
+              </div>
 
-            <div className="flex items-center gap-3 mb-6">
-             <div className="w-5 h-5 rounded-md border border-violet-400 text-violet-400 flex items-center justify-center text-xs font-bold">
-  @
-</div>
-
-              <h2 className="text-xl font-semibold">
-                Social Media Platforms
-              </h2>
+              <div>
+                <h2 className="text-lg font-bold text-[#2B241F]">
+                  Target Social Platforms *
+                </h2>
+                <p className="text-xs text-[#4A3A2E]/70">
+                  Select platforms where creators will publish campaign content
+                </p>
+              </div>
             </div>
 
-            <p className="text-sm text-gray-400 mb-4">
-              Select the platforms where creators will publish content.
-            </p>
-
-            <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-
+            <div className="grid grid-cols-2 md:grid-cols-4 gap-3.5 mt-4">
               {platformOptions.map((platform) => {
-                const selected =
-                  formData.platforms.includes(platform);
+                const selected = formData.platforms.includes(platform);
 
                 return (
                   <button
                     key={platform}
                     type="button"
-                    onClick={() =>
-                      handlePlatformChange(platform)
-                    }
-                    className={`p-4 rounded-xl border transition ${
+                    onClick={() => handlePlatformChange(platform)}
+                    className={`p-4 rounded-xl border text-sm font-bold transition flex items-center justify-between ${
                       selected
-                        ? "border-violet-500 bg-violet-500/10 text-violet-300"
-                        : "border-white/10 bg-[#111827] text-gray-400 hover:border-violet-500/40"
+                        ? "border-[#8B6F5A] bg-[#EDE7DC] text-[#2B241F] shadow-xs"
+                        : "border-[#D7C9B8] bg-[#EDE7DC]/30 text-[#4A3A2E]/80 hover:border-[#8B6F5A] hover:bg-[#EDE7DC]"
                     }`}
                   >
-                    <div className="flex items-center justify-between">
-                      <span>{platform}</span>
-
-                      {selected && (
-                        <CheckCircle size={17} />
-                      )}
-                    </div>
+                    <span>{platform}</span>
+                    {selected && (
+                      <CheckCircle size={17} className="text-[#8B6F5A] shrink-0" />
+                    )}
                   </button>
                 );
               })}
-
             </div>
           </section>
 
           {/* Budget and Creators */}
-          <section className="rounded-2xl border border-white/10 bg-white/[0.03] p-6">
-
+          <section className="rounded-2xl border border-[#D7C9B8] bg-[#FAF9F6] p-6 md:p-8 shadow-xs">
             <div className="flex items-center gap-3 mb-6">
-              <DollarSign
-                size={21}
-                className="text-violet-400"
-              />
+              <div className="p-2 rounded-xl bg-[#EDE7DC] text-[#8B6F5A] border border-[#D7C9B8]">
+                <DollarSign size={20} />
+              </div>
 
-              <h2 className="text-xl font-semibold">
-                Budget & Creators
-              </h2>
+              <div>
+                <h2 className="text-lg font-bold text-[#2B241F]">
+                  Budget & Creator Capacity
+                </h2>
+                <p className="text-xs text-[#4A3A2E]/70">
+                  Set campaign compensation and creator headcount
+                </p>
+              </div>
             </div>
 
             <div className="grid md:grid-cols-2 gap-5">
-
               {/* Budget */}
               <div>
-                <label className="block text-sm text-gray-300 mb-2">
+                <label className="block text-xs font-bold text-[#4A3A2E] uppercase tracking-wider mb-2">
                   Total Budget ({brandCurrency.symbol}) *
                 </label>
 
                 <div className="relative">
-                  <span className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400 font-semibold">
+                  <span className="absolute left-4 top-1/2 -translate-y-1/2 text-[#4A3A2E]/60 font-bold text-sm">
                     {brandCurrency.symbol}
                   </span>
 
@@ -521,23 +493,23 @@ const CreateCampaign = () => {
                     name="budget"
                     value={formData.budget}
                     onChange={handleChange}
-                    placeholder="5000"
+                    placeholder="50000"
                     min="1"
-                    className="w-full bg-[#111827] border border-white/10 rounded-xl px-10 py-3 text-white outline-none focus:border-violet-500"
+                    className="w-full bg-[#FAF9F6] border border-[#D7C9B8] rounded-xl pl-9 pr-4 py-3 text-[#2B241F] placeholder:text-[#4A3A2E]/40 outline-none focus:border-[#8B6F5A] focus:ring-2 focus:ring-[#8B6F5A]/15 transition text-sm font-medium"
                   />
                 </div>
               </div>
 
               {/* Creators Needed */}
               <div>
-                <label className="block text-sm text-gray-300 mb-2">
+                <label className="block text-xs font-bold text-[#4A3A2E] uppercase tracking-wider mb-2">
                   Number of Creators Needed *
                 </label>
 
                 <div className="relative">
                   <Users
                     size={18}
-                    className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400"
+                    className="absolute left-4 top-1/2 -translate-y-1/2 text-[#4A3A2E]/60"
                   />
 
                   <input
@@ -546,32 +518,33 @@ const CreateCampaign = () => {
                     value={formData.creatorsNeeded}
                     onChange={handleChange}
                     min="1"
-                    className="w-full bg-[#111827] border border-white/10 rounded-xl px-11 py-3 text-white outline-none focus:border-violet-500"
+                    className="w-full bg-[#FAF9F6] border border-[#D7C9B8] rounded-xl pl-11 pr-4 py-3 text-[#2B241F] outline-none focus:border-[#8B6F5A] focus:ring-2 focus:ring-[#8B6F5A]/15 transition text-sm font-medium"
                   />
                 </div>
               </div>
-
             </div>
           </section>
 
-          {/* Dates */}
-          <section className="rounded-2xl border border-white/10 bg-white/[0.03] p-6">
-
+          {/* Timeline Dates */}
+          <section className="rounded-2xl border border-[#D7C9B8] bg-[#FAF9F6] p-6 md:p-8 shadow-xs">
             <div className="flex items-center gap-3 mb-6">
-              <Calendar
-                size={21}
-                className="text-violet-400"
-              />
+              <div className="p-2 rounded-xl bg-[#EDE7DC] text-[#8B6F5A] border border-[#D7C9B8]">
+                <Calendar size={20} />
+              </div>
 
-              <h2 className="text-xl font-semibold">
-                Campaign Timeline
-              </h2>
+              <div>
+                <h2 className="text-lg font-bold text-[#2B241F]">
+                  Campaign Timeline
+                </h2>
+                <p className="text-xs text-[#4A3A2E]/70">
+                  Important milestone and deadline dates
+                </p>
+              </div>
             </div>
 
             <div className="grid md:grid-cols-3 gap-5">
-
               <div>
-                <label className="block text-sm text-gray-300 mb-2">
+                <label className="block text-xs font-bold text-[#4A3A2E] uppercase tracking-wider mb-2">
                   Start Date *
                 </label>
 
@@ -580,12 +553,12 @@ const CreateCampaign = () => {
                   name="startDate"
                   value={formData.startDate}
                   onChange={handleChange}
-                  className="w-full bg-[#111827] border border-white/10 rounded-xl px-4 py-3 text-white outline-none focus:border-violet-500"
+                  className="w-full bg-[#FAF9F6] border border-[#D7C9B8] rounded-xl px-4 py-3 text-[#2B241F] outline-none focus:border-[#8B6F5A] focus:ring-2 focus:ring-[#8B6F5A]/15 transition text-sm font-medium"
                 />
               </div>
 
               <div>
-                <label className="block text-sm text-gray-300 mb-2">
+                <label className="block text-xs font-bold text-[#4A3A2E] uppercase tracking-wider mb-2">
                   End Date *
                 </label>
 
@@ -594,12 +567,12 @@ const CreateCampaign = () => {
                   name="endDate"
                   value={formData.endDate}
                   onChange={handleChange}
-                  className="w-full bg-[#111827] border border-white/10 rounded-xl px-4 py-3 text-white outline-none focus:border-violet-500"
+                  className="w-full bg-[#FAF9F6] border border-[#D7C9B8] rounded-xl px-4 py-3 text-[#2B241F] outline-none focus:border-[#8B6F5A] focus:ring-2 focus:ring-[#8B6F5A]/15 transition text-sm font-medium"
                 />
               </div>
 
               <div>
-                <label className="block text-sm text-gray-300 mb-2">
+                <label className="block text-xs font-bold text-[#4A3A2E] uppercase tracking-wider mb-2">
                   Application Deadline *
                 </label>
 
@@ -608,30 +581,32 @@ const CreateCampaign = () => {
                   name="applicationDeadline"
                   value={formData.applicationDeadline}
                   onChange={handleChange}
-                  className="w-full bg-[#111827] border border-white/10 rounded-xl px-4 py-3 text-white outline-none focus:border-violet-500"
+                  className="w-full bg-[#FAF9F6] border border-[#D7C9B8] rounded-xl px-4 py-3 text-[#2B241F] outline-none focus:border-[#8B6F5A] focus:ring-2 focus:ring-[#8B6F5A]/15 transition text-sm font-medium"
                 />
               </div>
-
             </div>
           </section>
 
-          {/* Location */}
-          <section className="rounded-2xl border border-white/10 bg-white/[0.03] p-6">
-
+          {/* Target Location */}
+          <section className="rounded-2xl border border-[#D7C9B8] bg-[#FAF9F6] p-6 md:p-8 shadow-xs">
             <div className="flex items-center gap-3 mb-6">
-              <MapPin
-                size={21}
-                className="text-violet-400"
-              />
+              <div className="p-2 rounded-xl bg-[#EDE7DC] text-[#8B6F5A] border border-[#D7C9B8]">
+                <MapPin size={20} />
+              </div>
 
-              <h2 className="text-xl font-semibold">
-                Location
-              </h2>
+              <div>
+                <h2 className="text-lg font-bold text-[#2B241F]">
+                  Target Geographic Location
+                </h2>
+                <p className="text-xs text-[#4A3A2E]/70">
+                  Specify creator location or campaign target country
+                </p>
+              </div>
             </div>
 
             <div>
-              <label className="block text-sm text-gray-300 mb-2">
-                Target Location
+              <label className="block text-xs font-bold text-[#4A3A2E] uppercase tracking-wider mb-2">
+                Target Country / Region
               </label>
 
               <input
@@ -639,105 +614,94 @@ const CreateCampaign = () => {
                 name="location"
                 value={formData.location}
                 onChange={handleChange}
-                placeholder={`Example: ${user?.country || "USA"}`}
-                className="w-full bg-[#111827] border border-white/10 rounded-xl px-4 py-3 text-white outline-none focus:border-violet-500"
+                placeholder={`Example: ${user?.country || "India"}`}
+                className="w-full bg-[#FAF9F6] border border-[#D7C9B8] rounded-xl px-4 py-3 text-[#2B241F] placeholder:text-[#4A3A2E]/40 outline-none focus:border-[#8B6F5A] focus:ring-2 focus:ring-[#8B6F5A]/15 transition text-sm font-medium"
               />
             </div>
-
           </section>
 
           {/* Deliverables */}
-          <section className="rounded-2xl border border-white/10 bg-white/[0.03] p-6">
+          <section className="rounded-2xl border border-[#D7C9B8] bg-[#FAF9F6] p-6 md:p-8 shadow-xs">
+            <div className="flex items-center gap-3 mb-4">
+              <div className="p-2 rounded-xl bg-[#EDE7DC] text-[#8B6F5A] border border-[#D7C9B8]">
+                <FileText size={20} />
+              </div>
 
-            <div className="flex items-center gap-3 mb-6">
-              <FileText
-                size={21}
-                className="text-violet-400"
-              />
-
-              <h2 className="text-xl font-semibold">
-                Deliverables
-              </h2>
+              <div>
+                <h2 className="text-lg font-bold text-[#2B241F]">
+                  Required Deliverables *
+                </h2>
+                <p className="text-xs text-[#4A3A2E]/70">
+                  Specify exact content items and deliverables expected
+                </p>
+              </div>
             </div>
-
-            <label className="block text-sm text-gray-300 mb-2">
-              What should creators deliver? *
-            </label>
 
             <textarea
               name="deliverables"
               value={formData.deliverables}
               onChange={handleChange}
-              rows="5"
+              rows="4"
               placeholder={`Example:
-• 2 Instagram Reels
-• 3 Instagram Stories
-• 1 Instagram Post
-• Product mention in caption`}
-              className="w-full bg-[#111827] border border-white/10 rounded-xl px-4 py-3 text-white outline-none focus:border-violet-500 resize-none"
+• 2 Instagram Reels (30-60s)
+• 3 Instagram Stories with brand link
+• Product tag in caption`}
+              className="w-full bg-[#FAF9F6] border border-[#D7C9B8] rounded-xl px-4 py-3 text-[#2B241F] placeholder:text-[#4A3A2E]/40 outline-none focus:border-[#8B6F5A] focus:ring-2 focus:ring-[#8B6F5A]/15 transition text-sm font-medium resize-none"
             />
-
           </section>
 
-          {/* Requirements */}
-          <section className="rounded-2xl border border-white/10 bg-white/[0.03] p-6">
+          {/* Creator Requirements */}
+          <section className="rounded-2xl border border-[#D7C9B8] bg-[#FAF9F6] p-6 md:p-8 shadow-xs">
+            <div className="flex items-center gap-3 mb-4">
+              <div className="p-2 rounded-xl bg-[#EDE7DC] text-[#8B6F5A] border border-[#D7C9B8]">
+                <Users size={20} />
+              </div>
 
-            <div className="flex items-center gap-3 mb-6">
-              <Users
-                size={21}
-                className="text-violet-400"
-              />
-
-              <h2 className="text-xl font-semibold">
-                Creator Requirements
-              </h2>
+              <div>
+                <h2 className="text-lg font-bold text-[#2B241F]">
+                  Creator Qualifications & Requirements *
+                </h2>
+                <p className="text-xs text-[#4A3A2E]/70">
+                  Outline creator criteria, niche, and follower expectations
+                </p>
+              </div>
             </div>
-
-            <label className="block text-sm text-gray-300 mb-2">
-              What are you looking for in creators? *
-            </label>
 
             <textarea
               name="requirements"
               value={formData.requirements}
               onChange={handleChange}
-              rows="5"
+              rows="4"
               placeholder={`Example:
-• Minimum 10K followers
-• Fashion or lifestyle niche
-• Good engagement rate
-• Based in India
-• Professional content quality`}
-              className="w-full bg-[#111827] border border-white/10 rounded-xl px-4 py-3 text-white outline-none focus:border-violet-500 resize-none"
+• Minimum 10K+ followers
+• Active niche engagement in Beauty/Lifestyle
+• High-quality authentic aesthetic
+• Reliable turnaround time`}
+              className="w-full bg-[#FAF9F6] border border-[#D7C9B8] rounded-xl px-4 py-3 text-[#2B241F] placeholder:text-[#4A3A2E]/40 outline-none focus:border-[#8B6F5A] focus:ring-2 focus:ring-[#8B6F5A]/15 transition text-sm font-medium resize-none"
             />
-
           </section>
 
-          {/* Bottom Actions */}
-          <section className="rounded-2xl border border-white/10 bg-white/[0.03] p-6">
-
+          {/* Bottom Action Card */}
+          <section className="rounded-2xl border border-[#D7C9B8] bg-[#FAF9F6] p-6 md:p-8 shadow-xs">
             <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-5">
-
               <div>
-                <h3 className="font-semibold">
-                  Ready to launch?
+                <h3 className="font-bold text-[#2B241F] text-base">
+                  Ready to Launch?
                 </h3>
 
-                <p className="text-sm text-gray-400 mt-1">
-                  Save your campaign as a draft or publish it
-                  for creators.
+                <p className="text-xs text-[#4A3A2E]/70 mt-0.5">
+                  Save as a draft or publish immediately to the creator marketplace.
                 </p>
               </div>
 
               <div className="flex flex-col sm:flex-row gap-3">
-
                 <button
                   type="button"
                   onClick={() => handleSubmit("draft")}
                   disabled={saving}
-                  className="flex items-center justify-center gap-2 px-6 py-3 rounded-xl border border-white/10 text-gray-300 hover:bg-white/5 transition disabled:opacity-50"
+                  className="flex items-center justify-center gap-2 px-6 py-3 rounded-xl border border-[#D7C9B8] bg-[#EDE7DC] hover:bg-[#D7C9B8] text-[#2B241F] font-bold text-sm transition disabled:opacity-50"
                 >
-                  <Save size={18} />
+                  <Save size={17} />
                   Save Draft
                 </button>
 
@@ -745,20 +709,14 @@ const CreateCampaign = () => {
                   type="button"
                   onClick={() => handleSubmit("published")}
                   disabled={saving}
-                  className="flex items-center justify-center gap-2 px-6 py-3 rounded-xl bg-violet-600 hover:bg-violet-700 font-semibold transition disabled:opacity-50"
+                  className="flex items-center justify-center gap-2 px-7 py-3 rounded-xl bg-[#8B6F5A] hover:bg-[#785D4A] text-white font-bold text-sm shadow-xs transition disabled:opacity-50"
                 >
-                  <Send size={18} />
-
-                  {saving
-                    ? "Saving..."
-                    : "Publish Campaign"}
+                  <Send size={17} />
+                  {saving ? "Publishing..." : "Publish Campaign"}
                 </button>
-
               </div>
-
             </div>
           </section>
-
         </div>
       </main>
     </div>

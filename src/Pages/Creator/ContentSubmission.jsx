@@ -10,6 +10,7 @@ import {
   Send,
   ExternalLink,
   RefreshCw,
+  Sparkles,
 } from "lucide-react";
 import authService from "../../services/authService";
 
@@ -252,19 +253,19 @@ export default function ContentSubmission() {
   const getStatusIcon = (status) => {
     switch (status) {
       case "approved":
-        return <CheckCircle size={18} />;
+        return <CheckCircle size={15} />;
 
       case "changes_requested":
-        return <AlertCircle size={18} />;
+        return <AlertCircle size={15} />;
 
       case "rejected":
-        return <X size={18} />;
+        return <X size={15} />;
 
       case "under_review":
-        return <Clock size={18} />;
+        return <Clock size={15} />;
 
       default:
-        return <Clock size={18} />;
+        return <Clock size={15} />;
     }
   };
 
@@ -300,19 +301,19 @@ export default function ContentSubmission() {
     switch (status) {
       case "approved":
       case "published":
-        return "bg-green-500/10 text-green-400 border-green-500/20";
+        return "bg-emerald-50 text-emerald-700 border-emerald-200";
 
       case "changes_requested":
-        return "bg-yellow-500/10 text-yellow-400 border-yellow-500/20";
+        return "bg-amber-50 text-amber-700 border-amber-200";
 
       case "rejected":
-        return "bg-red-500/10 text-red-400 border-red-500/20";
+        return "bg-red-50 text-red-700 border-red-200";
 
       case "under_review":
-        return "bg-blue-500/10 text-blue-400 border-blue-500/20";
+        return "bg-blue-50 text-blue-700 border-blue-200";
 
       default:
-        return "bg-gray-500/10 text-gray-400 border-gray-500/20";
+        return "bg-slate-100 text-slate-700 border-slate-200";
     }
   };
 
@@ -320,74 +321,73 @@ export default function ContentSubmission() {
   // RENDER
   // =========================
   return (
-    <div className="min-h-screen bg-[#080812] text-white p-6 md:p-8">
-
+    <div className="min-h-screen bg-[#FAF9F6] text-[#2B241F] p-6 md:p-8 font-sans">
       {/* HEADER */}
-      <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4 mb-8">
-
+      <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4 mb-8 bg-[#FAF9F6] p-6 rounded-2xl border border-[#D7C9B8] shadow-xs">
         <div>
-          <h1 className="text-3xl font-bold">
+          <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-[#EDE7DC] text-[#8B6F5A] text-xs font-bold border border-[#D7C9B8] mb-2">
+            <Sparkles size={13} />
+            DELIVERABLES & REVIEWS
+          </div>
+          <h1 className="text-2xl md:text-3xl font-extrabold text-[#2B241F] tracking-tight">
             Content Submission
           </h1>
-
-          <p className="text-gray-400 mt-2">
-            Submit campaign content and track brand reviews.
+          <p className="text-[#4A3A2E]/70 text-xs mt-1">
+            Upload deliverables for brand approval, review client feedback, and manage live post links.
           </p>
         </div>
 
-        <div className="flex gap-3">
-
+        <div className="flex gap-2.5">
           <button
             onClick={fetchSubmissions}
-            className="flex items-center gap-2 px-4 py-2 rounded-xl
-            border border-white/10 bg-white/5 hover:bg-white/10 transition"
+            className="flex items-center gap-2 px-4 py-2.5 rounded-xl border border-[#D7C9B8] bg-[#FAF9F6] hover:bg-[#EDE7DC]/40 text-[#2B241F] text-xs font-bold transition shadow-2xs"
           >
-            <RefreshCw size={18} />
+            <RefreshCw size={14} />
             Refresh
           </button>
 
           <button
             onClick={() => openSubmissionModal()}
-            className="flex items-center gap-2 px-5 py-2.5 rounded-xl
-            bg-violet-600 hover:bg-violet-500 transition font-medium"
+            className="flex items-center gap-2 px-5 py-2.5 rounded-xl bg-[#8B6F5A] hover:bg-[#785D4A] text-white text-xs font-bold transition shadow-xs"
           >
-            <Upload size={18} />
-            Submit Content
+            <Upload size={14} />
+            Submit Deliverable
           </button>
-
         </div>
       </div>
 
       {/* CAMPAIGNS */}
       {campaigns.length > 0 && (
         <div className="mb-8">
-
-          <h2 className="text-lg font-semibold mb-4">
+          <h2 className="text-base font-extrabold text-[#2B241F] mb-3 tracking-tight">
             Active Collaborations
           </h2>
 
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-
             {campaigns.map((campaign) => (
               <div
                 key={campaign._id}
-                className={`p-5 rounded-2xl border transition cursor-pointer ${
+                className={`p-5 rounded-2xl border transition cursor-pointer shadow-xs ${
                   selectedCampaign?._id === campaign._id
-                    ? "border-violet-500 bg-violet-500/10"
-                    : "border-white/10 bg-white/[0.03] hover:bg-white/[0.06]"
+                    ? "border-[#8B6F5A] bg-[#EDE7DC]/40 ring-2 ring-[#8B6F5A]/20"
+                    : "border-[#D7C9B8] bg-[#FAF9F6] hover:border-[#8B6F5A]"
                 }`}
                 onClick={() => setSelectedCampaign(campaign)}
               >
+                <div className="flex items-center justify-between mb-2">
+                  <span className="text-[11px] font-bold px-2.5 py-0.5 rounded-full bg-emerald-50 text-emerald-800 border border-emerald-200">
+                    Active Campaign
+                  </span>
+                  <span className="text-xs font-bold text-[#8B6F5A]">
+                    {campaign.brandName || "Brand"}
+                  </span>
+                </div>
 
-                <p className="text-sm text-violet-400 mb-2">
-                  Active Campaign
-                </p>
-
-                <h3 className="font-semibold text-lg">
+                <h3 className="font-extrabold text-[#2B241F] text-base mt-1">
                   {campaign.title}
                 </h3>
 
-                <p className="text-gray-400 text-sm mt-2 line-clamp-2">
+                <p className="text-[#4A3A2E]/70 text-xs mt-1.5 line-clamp-2 leading-relaxed">
                   {campaign.description}
                 </p>
 
@@ -396,162 +396,119 @@ export default function ContentSubmission() {
                     event.stopPropagation();
                     openSubmissionModal(campaign);
                   }}
-                  className="mt-4 w-full py-2 rounded-lg bg-white/5
-                  hover:bg-violet-600 transition text-sm"
+                  className="mt-4 w-full py-2.5 rounded-xl bg-[#EDE7DC] hover:bg-[#8B6F5A] text-[#8B6F5A] hover:text-white transition text-xs font-bold border border-[#D7C9B8] shadow-2xs"
                 >
                   Submit for This Campaign
                 </button>
-
               </div>
             ))}
-
           </div>
         </div>
       )}
 
-      {/* SUBMISSIONS */}
+      {/* SUBMISSIONS LIST */}
       <div>
-
         <div className="flex items-center justify-between mb-4">
-          <h2 className="text-lg font-semibold">
+          <h2 className="text-base font-extrabold text-[#2B241F] tracking-tight">
             My Submissions
           </h2>
 
-          <span className="text-sm text-gray-500">
-            {submissions.length} submission
-            {submissions.length !== 1 ? "s" : ""}
+          <span className="text-xs font-bold text-[#8B6F5A] bg-[#EDE7DC] px-3 py-1 rounded-full border border-[#D7C9B8]">
+            {submissions.length} submission{submissions.length !== 1 ? "s" : ""}
           </span>
         </div>
 
         {loading ? (
-          <div className="text-center py-16 text-gray-400">
-            Loading submissions...
+          <div className="text-center py-16 text-[#4A3A2E]/50 text-xs">
+            Loading deliverables...
           </div>
         ) : submissions.length === 0 ? (
-
-          <div className="border border-white/10 rounded-2xl
-          bg-white/[0.03] py-16 text-center">
-
-            <FileText
-              size={45}
-              className="mx-auto text-gray-600 mb-4"
-            />
-
-            <h3 className="text-lg font-semibold">
+          <div className="border border-dashed border-[#D7C9B8] rounded-2xl bg-[#FAF9F6] py-16 text-center shadow-xs">
+            <FileText size={40} className="mx-auto text-[#4A3A2E]/40 mb-3" />
+            <h3 className="text-base font-extrabold text-[#2B241F]">
               No Content Submitted Yet
             </h3>
-
-            <p className="text-gray-500 mt-2">
-              Submit your first campaign deliverable.
+            <p className="text-[#4A3A2E]/70 text-xs mt-1 max-w-sm mx-auto">
+              Submit your first campaign deliverable for brand approval and feedback.
             </p>
 
             <button
               onClick={() => openSubmissionModal()}
-              className="mt-5 px-5 py-2.5 rounded-xl
-              bg-violet-600 hover:bg-violet-500 transition"
+              className="mt-5 px-5 py-2.5 rounded-xl bg-[#8B6F5A] hover:bg-[#785D4A] text-white text-xs font-bold transition shadow-xs"
             >
-              Submit Content
+              Submit Deliverable
             </button>
-
           </div>
-
         ) : (
-
           <div className="space-y-4">
-
             {submissions.map((submission) => (
-
               <div
                 key={submission._id}
-                className="border border-white/10 rounded-2xl
-                bg-white/[0.03] p-5 hover:bg-white/[0.05] transition"
+                className="border border-[#D7C9B8] rounded-2xl bg-[#FAF9F6] p-5 hover:border-[#8B6F5A] hover:shadow-xs transition"
               >
-
-                <div className="flex flex-col md:flex-row
-                md:items-start md:justify-between gap-4">
-
+                <div className="flex flex-col md:flex-row md:items-start md:justify-between gap-4">
                   <div className="flex gap-4">
-
-                    <div className="w-12 h-12 rounded-xl
-                    bg-violet-500/10 flex items-center justify-center
-                    text-violet-400">
+                    <div className="w-12 h-12 rounded-xl bg-[#EDE7DC] border border-[#D7C9B8] flex items-center justify-center text-[#8B6F5A] shrink-0">
                       <FileText size={22} />
                     </div>
 
                     <div>
-
-                      <h3 className="font-semibold text-lg">
+                      <h3 className="font-extrabold text-[#2B241F] text-base">
                         {submission.title}
                       </h3>
 
-                      <p className="text-gray-400 text-sm mt-1">
-                        {submission.campaignId?.title ||
-                          "Campaign"}
+                      <p className="text-[#4A3A2E]/70 text-xs mt-0.5 font-medium">
+                        {submission.campaignId?.title || "Campaign"}
                       </p>
 
                       <div className="flex flex-wrap gap-2 mt-3">
-
                         {submission.platform && (
-                          <span className="px-2.5 py-1 rounded-lg
-                          bg-white/5 text-gray-300 text-xs">
+                          <span className="px-2.5 py-0.5 rounded-lg bg-[#EDE7DC]/50 border border-[#D7C9B8] text-[#4A3A2E] text-[11px] font-bold">
                             {submission.platform}
                           </span>
                         )}
 
                         {submission.contentType && (
-                          <span className="px-2.5 py-1 rounded-lg
-                          bg-white/5 text-gray-300 text-xs">
+                          <span className="px-2.5 py-0.5 rounded-lg bg-[#EDE7DC]/50 border border-[#D7C9B8] text-[#4A3A2E] text-[11px] font-bold">
                             {submission.contentType}
                           </span>
                         )}
-
                       </div>
-
                     </div>
-
                   </div>
 
                   <div
-                    className={`flex items-center gap-2 px-3 py-2
-                    rounded-lg border text-sm ${getStatusClass(
+                    className={`flex items-center gap-1.5 px-3 py-1.5 rounded-xl border text-xs font-bold self-start ${getStatusClass(
                       submission.status
                     )}`}
                   >
                     {getStatusIcon(submission.status)}
                     {getStatusText(submission.status)}
                   </div>
-
                 </div>
 
-                {/* FEEDBACK */}
+                {/* FEEDBACK CALLOUT */}
                 {submission.feedback && (
-                  <div className="mt-5 p-4 rounded-xl
-                  bg-yellow-500/5 border border-yellow-500/20">
-
-                    <p className="text-sm font-medium text-yellow-400">
-                      Brand Feedback
+                  <div className="mt-4 p-4 rounded-xl bg-amber-50/70 border border-amber-200">
+                    <p className="text-xs font-bold text-amber-800 flex items-center gap-1.5">
+                      <AlertCircle size={14} /> Brand Feedback
                     </p>
-
-                    <p className="text-gray-300 text-sm mt-1">
+                    <p className="text-[#4A3A2E] text-xs mt-1 leading-relaxed">
                       {submission.feedback}
                     </p>
-
                   </div>
                 )}
 
-                {/* FILE / URL */}
-                <div className="mt-5 flex flex-wrap gap-3">
-
+                {/* FILE / LIVE URL BUTTONS */}
+                <div className="mt-4 flex flex-wrap gap-2.5 pt-3 border-t border-[#D7C9B8]/70">
                   {submission.fileUrl && (
                     <a
                       href={`http://localhost:5000${submission.fileUrl}`}
                       target="_blank"
                       rel="noreferrer"
-                      className="flex items-center gap-2 px-4 py-2
-                      rounded-lg bg-white/5 hover:bg-white/10
-                      text-sm"
+                      className="flex items-center gap-1.5 px-3.5 py-2 rounded-xl bg-[#EDE7DC]/30 hover:bg-[#EDE7DC] border border-[#D7C9B8] text-[#2B241F] text-xs font-bold transition"
                     >
-                      <FileText size={16} />
+                      <FileText size={14} />
                       View Submitted File
                     </a>
                   )}
@@ -561,112 +518,77 @@ export default function ContentSubmission() {
                       href={submission.liveUrl}
                       target="_blank"
                       rel="noreferrer"
-                      className="flex items-center gap-2 px-4 py-2
-                      rounded-lg bg-cyan-500/10 text-cyan-400
-                      hover:bg-cyan-500/20 text-sm"
+                      className="flex items-center gap-1.5 px-3.5 py-2 rounded-xl bg-[#EDE7DC]/30 hover:bg-[#EDE7DC] border border-[#D7C9B8] text-[#8B6F5A] text-xs font-bold transition"
                     >
-                      <ExternalLink size={16} />
-                      View Live Content
+                      <ExternalLink size={14} />
+                      View Live Post
                     </a>
                   )}
 
+                  {/* RESUBMISSION CTA */}
+                  {submission.status === "changes_requested" && (
+                    <button
+                      onClick={() => {
+                        const campaign = campaigns.find(
+                          (item) =>
+                            item._id === submission.campaignId?._id
+                        );
+                        openSubmissionModal(campaign);
+                      }}
+                      className="flex items-center gap-1.5 px-3.5 py-2 rounded-xl bg-amber-700 hover:bg-amber-800 text-white text-xs font-bold transition shadow-xs"
+                    >
+                      <RefreshCw size={13} />
+                      Resubmit Content
+                    </button>
+                  )}
                 </div>
-
-                {/* RESUBMIT */}
-                {submission.status === "changes_requested" && (
-                  <button
-                    onClick={() => {
-                      const campaign = campaigns.find(
-                        (item) =>
-                          item._id ===
-                          submission.campaignId?._id
-                      );
-
-                      openSubmissionModal(campaign);
-                    }}
-                    className="mt-4 flex items-center gap-2
-                    px-4 py-2 rounded-lg bg-yellow-500/10
-                    text-yellow-400 hover:bg-yellow-500/20"
-                  >
-                    <RefreshCw size={16} />
-                    Resubmit Content
-                  </button>
-                )}
-
               </div>
-
             ))}
-
           </div>
         )}
-
       </div>
 
       {/* =========================
           SUBMISSION MODAL
       ========================= */}
       {showModal && (
-        <div className="fixed inset-0 z-50 bg-black/70
-        backdrop-blur-sm flex items-center justify-center p-4">
-
-          <div className="w-full max-w-2xl max-h-[90vh]
-          overflow-y-auto bg-[#10101c] border border-white/10
-          rounded-2xl shadow-2xl">
-
+        <div className="fixed inset-0 z-50 bg-[#2B241F]/40 backdrop-blur-xs flex items-center justify-center p-4">
+          <div className="w-full max-w-2xl max-h-[90vh] overflow-y-auto bg-[#FAF9F6] border border-[#D7C9B8] rounded-2xl shadow-2xl">
             {/* MODAL HEADER */}
-            <div className="sticky top-0 bg-[#10101c]
-            border-b border-white/10 px-6 py-5
-            flex items-center justify-between">
-
+            <div className="sticky top-0 bg-[#FAF9F6]/95 backdrop-blur-md border-b border-[#D7C9B8]/70 px-6 py-5 flex items-center justify-between z-10">
               <div>
-                <h2 className="text-xl font-semibold">
-                  Submit Campaign Content
+                <h2 className="text-lg font-extrabold text-[#2B241F] tracking-tight">
+                  Submit Deliverable Content
                 </h2>
-
-                <p className="text-gray-500 text-sm mt-1">
-                  Send your deliverable to the brand for review.
+                <p className="text-[#4A3A2E]/70 text-xs mt-0.5">
+                  Send your media deliverable to the brand for review and approval.
                 </p>
               </div>
 
               <button
                 onClick={() => setShowModal(false)}
-                className="p-2 rounded-lg hover:bg-white/10"
+                className="p-2 rounded-xl text-[#4A3A2E]/70 hover:text-[#2B241F] hover:bg-[#EDE7DC] transition"
               >
-                <X size={20} />
+                <X size={18} />
               </button>
-
             </div>
 
             {/* FORM */}
-            <form
-              onSubmit={handleSubmit}
-              className="p-6 space-y-5"
-            >
-
+            <form onSubmit={handleSubmit} className="p-6 space-y-4">
               {/* CAMPAIGN */}
               <div>
-                <label className="block text-sm text-gray-300 mb-2">
+                <label className="block text-xs font-bold text-[#2B241F] mb-1.5">
                   Campaign
                 </label>
-
                 <select
                   name="campaignId"
                   value={formData.campaignId}
                   onChange={handleChange}
-                  className="w-full px-4 py-3 rounded-xl
-                  bg-white/5 border border-white/10
-                  outline-none focus:border-violet-500"
+                  className="w-full px-3.5 py-2.5 rounded-xl bg-[#EDE7DC]/30 border border-[#D7C9B8] text-xs font-medium text-[#2B241F] outline-none focus:border-[#8B6F5A] focus:bg-[#FAF9F6]"
                 >
-                  <option value="" className="bg-[#10101c]">
-                    Select Campaign
-                  </option>
-
+                  <option value="">Select Campaign</option>
                   {campaigns.map((campaign) => (
-                    <option
-                      key={campaign._id}
-                      value={campaign._id}
-                      className="bg-[#10101c]"
-                    >
+                    <option key={campaign._id} value={campaign._id}>
                       {campaign.title}
                     </option>
                   ))}
@@ -675,164 +597,90 @@ export default function ContentSubmission() {
 
               {/* TITLE */}
               <div>
-                <label className="block text-sm text-gray-300 mb-2">
+                <label className="block text-xs font-bold text-[#2B241F] mb-1.5">
                   Content Title
                 </label>
-
                 <input
                   type="text"
                   name="title"
                   value={formData.title}
                   onChange={handleChange}
-                  placeholder="e.g. Summer Collection Reel"
-                  className="w-full px-4 py-3 rounded-xl
-                  bg-white/5 border border-white/10
-                  outline-none focus:border-violet-500"
+                  placeholder="e.g. Summer Collection Reel - Draft 1"
+                  className="w-full px-3.5 py-2.5 rounded-xl bg-[#EDE7DC]/30 border border-[#D7C9B8] text-xs font-medium text-[#2B241F] outline-none focus:border-[#8B6F5A] focus:bg-[#FAF9F6]"
                 />
               </div>
 
               {/* PLATFORM + TYPE */}
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-
                 <div>
-                  <label className="block text-sm text-gray-300 mb-2">
+                  <label className="block text-xs font-bold text-[#2B241F] mb-1.5">
                     Platform
                   </label>
-
                   <select
                     name="platform"
                     value={formData.platform}
                     onChange={handleChange}
-                    className="w-full px-4 py-3 rounded-xl
-                    bg-white/5 border border-white/10
-                    outline-none focus:border-violet-500"
+                    className="w-full px-3.5 py-2.5 rounded-xl bg-[#EDE7DC]/30 border border-[#D7C9B8] text-xs font-medium text-[#2B241F] outline-none focus:border-[#8B6F5A] focus:bg-[#FAF9F6]"
                   >
-                    <option value="" className="bg-[#10101c]">
-                      Select Platform
-                    </option>
-                    <option
-                      value="Instagram"
-                      className="bg-[#10101c]"
-                    >
-                      Instagram
-                    </option>
-                    <option
-                      value="YouTube"
-                      className="bg-[#10101c]"
-                    >
-                      YouTube
-                    </option>
-                    <option
-                      value="TikTok"
-                      className="bg-[#10101c]"
-                    >
-                      TikTok
-                    </option>
-                    <option
-                      value="Facebook"
-                      className="bg-[#10101c]"
-                    >
-                      Facebook
-                    </option>
+                    <option value="">Select Platform</option>
+                    <option value="Instagram">Instagram</option>
+                    <option value="YouTube">YouTube</option>
+                    <option value="TikTok">TikTok</option>
+                    <option value="Facebook">Facebook</option>
                   </select>
                 </div>
 
                 <div>
-                  <label className="block text-sm text-gray-300 mb-2">
+                  <label className="block text-xs font-bold text-[#2B241F] mb-1.5">
                     Content Type
                   </label>
-
                   <select
                     name="contentType"
                     value={formData.contentType}
                     onChange={handleChange}
-                    className="w-full px-4 py-3 rounded-xl
-                    bg-white/5 border border-white/10
-                    outline-none focus:border-violet-500"
+                    className="w-full px-3.5 py-2.5 rounded-xl bg-[#EDE7DC]/30 border border-[#D7C9B8] text-xs font-medium text-[#2B241F] outline-none focus:border-[#8B6F5A] focus:bg-[#FAF9F6]"
                   >
-                    <option value="" className="bg-[#10101c]">
-                      Select Type
-                    </option>
-                    <option
-                      value="Reel"
-                      className="bg-[#10101c]"
-                    >
-                      Reel
-                    </option>
-                    <option
-                      value="Post"
-                      className="bg-[#10101c]"
-                    >
-                      Post
-                    </option>
-                    <option
-                      value="Story"
-                      className="bg-[#10101c]"
-                    >
-                      Story
-                    </option>
-                    <option
-                      value="Video"
-                      className="bg-[#10101c]"
-                    >
-                      Video
-                    </option>
-                    <option
-                      value="Image"
-                      className="bg-[#10101c]"
-                    >
-                      Image
-                    </option>
+                    <option value="">Select Type</option>
+                    <option value="Reel">Reel</option>
+                    <option value="Post">Post</option>
+                    <option value="Story">Story</option>
+                    <option value="Video">Video</option>
+                    <option value="Image">Image</option>
                   </select>
                 </div>
-
               </div>
 
-              {/* FILE */}
+              {/* FILE UPLOAD DROPZONE */}
               <div>
-                <label className="block text-sm text-gray-300 mb-2">
-                  Upload Content
+                <label className="block text-xs font-bold text-[#2B241F] mb-1.5">
+                  Upload Media File
                 </label>
 
                 <label
                   htmlFor="content-file-input"
-                  className="flex flex-col items-center
-                  justify-center w-full min-h-36 rounded-xl
-                  border border-dashed border-white/20
-                  bg-white/[0.02] hover:bg-white/[0.05]
-                  cursor-pointer transition"
+                  className="flex flex-col items-center justify-center w-full min-h-32 rounded-xl border-2 border-dashed border-[#D7C9B8] bg-[#EDE7DC]/30 hover:bg-[#EDE7DC]/60 hover:border-[#8B6F5A] cursor-pointer transition p-4 text-center"
                 >
-
-                  <Upload
-                    size={30}
-                    className="text-violet-400 mb-2"
-                  />
+                  <Upload size={26} className="text-[#8B6F5A] mb-1.5" />
 
                   {selectedFile ? (
                     <>
-                      <p className="text-white font-medium">
+                      <p className="text-[#2B241F] font-bold text-xs">
                         {selectedFile.name}
                       </p>
-
-                      <p className="text-gray-500 text-xs mt-1">
-                        {(selectedFile.size / 1024 / 1024).toFixed(
-                          2
-                        )}{" "}
-                        MB
+                      <p className="text-[#4A3A2E]/60 text-[11px] mt-0.5">
+                        {(selectedFile.size / 1024 / 1024).toFixed(2)} MB
                       </p>
                     </>
                   ) : (
                     <>
-                      <p className="text-gray-300">
-                        Click to select a file
+                      <p className="text-[#2B241F] text-xs font-bold">
+                        Click or drag file to upload
                       </p>
-
-                      <p className="text-gray-500 text-xs mt-1">
-                        Images, videos, PDF or other campaign files
+                      <p className="text-[#4A3A2E]/60 text-[11px] mt-0.5">
+                        Supports MP4, MOV, PNG, JPG, PDF (up to 50MB)
                       </p>
                     </>
                   )}
-
                 </label>
 
                 <input
@@ -845,69 +693,55 @@ export default function ContentSubmission() {
 
               {/* LIVE URL */}
               <div>
-                <label className="block text-sm text-gray-300 mb-2">
-                  Live Content URL
-                  <span className="text-gray-500 ml-1">
-                    (optional)
-                  </span>
+                <label className="block text-xs font-bold text-[#2B241F] mb-1.5">
+                  Live Post URL <span className="text-[#4A3A2E]/60 font-normal">(Optional)</span>
                 </label>
-
                 <input
                   type="url"
                   name="liveUrl"
                   value={formData.liveUrl}
                   onChange={handleChange}
-                  placeholder="https://..."
-                  className="w-full px-4 py-3 rounded-xl
-                  bg-white/5 border border-white/10
-                  outline-none focus:border-violet-500"
+                  placeholder="https://instagram.com/p/..."
+                  className="w-full px-3.5 py-2.5 rounded-xl bg-[#EDE7DC]/30 border border-[#D7C9B8] text-xs font-medium text-[#2B241F] outline-none focus:border-[#8B6F5A] focus:bg-[#FAF9F6]"
                 />
               </div>
 
               {/* CAPTION */}
               <div>
-                <label className="block text-sm text-gray-300 mb-2">
-                  Caption
+                <label className="block text-xs font-bold text-[#2B241F] mb-1.5">
+                  Caption / Hashtags
                 </label>
-
                 <textarea
                   name="caption"
                   value={formData.caption}
                   onChange={handleChange}
-                  rows="4"
-                  placeholder="Enter the caption for your content..."
-                  className="w-full px-4 py-3 rounded-xl
-                  bg-white/5 border border-white/10
-                  outline-none focus:border-violet-500 resize-none"
+                  rows="3"
+                  placeholder="Paste the caption & tags intended for this post..."
+                  className="w-full px-3.5 py-2.5 rounded-xl bg-[#EDE7DC]/30 border border-[#D7C9B8] text-xs font-medium text-[#2B241F] outline-none focus:border-[#8B6F5A] focus:bg-[#FAF9F6] resize-none"
                 />
               </div>
 
               {/* DESCRIPTION */}
               <div>
-                <label className="block text-sm text-gray-300 mb-2">
-                  Notes / Description
+                <label className="block text-xs font-bold text-[#2B241F] mb-1.5">
+                  Notes for the Brand
                 </label>
-
                 <textarea
                   name="description"
                   value={formData.description}
                   onChange={handleChange}
-                  rows="3"
-                  placeholder="Add any notes for the brand..."
-                  className="w-full px-4 py-3 rounded-xl
-                  bg-white/5 border border-white/10
-                  outline-none focus:border-violet-500 resize-none"
+                  rows="2"
+                  placeholder="Any context or timeline notes for the brand team..."
+                  className="w-full px-3.5 py-2.5 rounded-xl bg-[#EDE7DC]/30 border border-[#D7C9B8] text-xs font-medium text-[#2B241F] outline-none focus:border-[#8B6F5A] focus:bg-[#FAF9F6] resize-none"
                 />
               </div>
 
               {/* BUTTONS */}
-              <div className="flex justify-end gap-3 pt-3">
-
+              <div className="flex justify-end gap-2.5 pt-3 border-t border-[#D7C9B8]/70">
                 <button
                   type="button"
                   onClick={() => setShowModal(false)}
-                  className="px-5 py-2.5 rounded-xl
-                  bg-white/5 hover:bg-white/10"
+                  className="px-4 py-2.5 rounded-xl border border-[#D7C9B8] bg-[#FAF9F6] hover:bg-[#EDE7DC] text-[#2B241F] text-xs font-bold transition"
                 >
                   Cancel
                 </button>
@@ -915,36 +749,25 @@ export default function ContentSubmission() {
                 <button
                   type="submit"
                   disabled={uploading}
-                  className="flex items-center gap-2 px-5 py-2.5
-                  rounded-xl bg-violet-600
-                  hover:bg-violet-500 disabled:opacity-50"
+                  className="flex items-center gap-2 px-5 py-2.5 rounded-xl bg-[#8B6F5A] hover:bg-[#785D4A] text-white text-xs font-bold transition shadow-xs disabled:opacity-50"
                 >
-
                   {uploading ? (
                     <>
-                      <RefreshCw
-                        size={18}
-                        className="animate-spin"
-                      />
+                      <RefreshCw size={14} className="animate-spin" />
                       Submitting...
                     </>
                   ) : (
                     <>
-                      <Send size={18} />
+                      <Send size={14} />
                       Submit for Review
                     </>
                   )}
-
                 </button>
-
               </div>
-
             </form>
-
           </div>
         </div>
       )}
-
     </div>
   );
 }

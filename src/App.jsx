@@ -32,6 +32,10 @@ import Notifications from "./Components/Common/Notifications.jsx";
 
 import CreatorDetails from "./Pages/Public/CreatorDetails.jsx";
 
+import BrandPayments from "./Pages/Brand/BrandPayments.jsx";
+
+import CreatorEarnings from "./Pages/Creator/CreatorEarnings.jsx";
+
 
 function App() {
   return (
@@ -76,6 +80,16 @@ function App() {
         element={<CreatorDetails />}
       />
 
+      <Route
+        path="/brand/earnings"
+        element={<BrandPayments />}
+      />
+
+      <Route
+        path="/brand/payments"
+        element={<BrandPayments />}
+      />
+
 
       {/* Creator Pages */}
       <Route
@@ -96,6 +110,11 @@ function App() {
       <Route
         path="/creator/content-submission"
         element={<ContentSubmission />}
+      />
+
+      <Route
+        path="/creator/earnings"
+        element={<CreatorEarnings />}
       />
 
 
